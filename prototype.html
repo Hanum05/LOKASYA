@@ -274,41 +274,43 @@
             </div>
 
             <!-- VIEW: PETA EKSPLORASI -->
-            <div id="view-map" class="view-section h-full flex flex-col">
-                <div class="p-4 sm:p-6 bg-white dark:bg-slate-950 border-b border-slate-200 dark:border-slate-800 shrink-0">
-                    <h1 class="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                        <i data-lucide="map" class="text-amber-500"></i> Peta Eksplorasi Geotagging
-                    </h1>
-                    <p class="text-slate-500 dark:text-slate-400 text-sm mt-1">Pemetaan sebaran proyek investasi syariah yang lokasinya telah divalidasi fisik.</p>
-                </div>
-                
-                <!-- Map UI Container -->
-                <div class="flex-1 relative flex flex-col md:flex-row">
-                    <!-- Map Wrapper -->
-                    <div class="flex-1 relative bg-slate-200">
-                        <div id="appMap" class="absolute inset-0"></div>
+            <div id="view-map" class="view-section absolute inset-0 bg-slate-50 dark:bg-slate-900 z-10">
+                <div class="flex flex-col h-full w-full overflow-hidden">
+                    <div class="p-4 sm:p-6 bg-white dark:bg-slate-950 border-b border-slate-200 dark:border-slate-800 shrink-0">
+                        <h1 class="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                            <i data-lucide="map" class="text-amber-500"></i> Peta Eksplorasi Geotagging
+                        </h1>
+                        <p class="text-slate-500 dark:text-slate-400 text-sm mt-1">Pemetaan sebaran proyek investasi syariah yang lokasinya telah divalidasi fisik.</p>
                     </div>
                     
-                    <!-- Interactive Floating / Sidebar Project Info -->
-                    <div class="w-full md:w-96 bg-white dark:bg-slate-900 border-l border-slate-200 dark:border-slate-800 flex flex-col shrink-0 z-20 shadow-[-4px_0_15px_rgba(0,0,0,0.05)]">
-                        <div class="p-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50 flex justify-between items-center shrink-0">
-                            <h3 class="font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
-                                <i data-lucide="list-checks" class="w-4 h-4 text-emerald-500"></i> Catatan Lapangan
-                            </h3>
-                            <span id="locCounter" class="text-xs font-bold bg-emerald-100 text-emerald-700 px-2 py-1 rounded-full">0 Lokasi</span>
+                    <!-- Map UI Container -->
+                    <div class="flex-1 relative flex flex-col md:flex-row overflow-hidden min-h-0">
+                        <!-- Map Wrapper -->
+                        <div class="flex-1 relative bg-slate-200 min-h-[300px] md:min-h-0 z-0">
+                            <div id="appMap" class="absolute inset-0"></div>
                         </div>
                         
-                        <div class="bg-amber-50 dark:bg-amber-900/20 p-3 text-xs text-amber-800 dark:text-amber-400 border-b border-amber-100 dark:border-amber-900/50 flex items-center gap-2 shrink-0">
-                            <i data-lucide="mouse-pointer-click" class="w-4 h-4 shrink-0"></i> 
-                            <span><b>Demo:</b> Klik pada area peta untuk menandai & mencatat lokasi proyek baru secara mandiri.</span>
-                        </div>
+                        <!-- Interactive Floating / Sidebar Project Info -->
+                        <div class="w-full md:w-96 bg-white dark:bg-slate-900 border-t md:border-t-0 md:border-l border-slate-200 dark:border-slate-800 flex flex-col shrink-0 z-20 shadow-[-4px_0_15px_rgba(0,0,0,0.05)] h-[50vh] md:h-full">
+                            <div class="p-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50 flex justify-between items-center shrink-0">
+                                <h3 class="font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
+                                    <i data-lucide="list-checks" class="w-4 h-4 text-emerald-500"></i> Catatan Lapangan
+                                </h3>
+                                <span id="locCounter" class="text-xs font-bold bg-emerald-100 text-emerald-700 px-2 py-1 rounded-full">0 Lokasi</span>
+                            </div>
+                            
+                            <div class="bg-amber-50 dark:bg-amber-900/20 p-3 text-xs text-amber-800 dark:text-amber-400 border-b border-amber-100 dark:border-amber-900/50 flex items-center gap-2 shrink-0">
+                                <i data-lucide="mouse-pointer-click" class="w-4 h-4 shrink-0"></i> 
+                                <span><b>Demo:</b> Klik pada area peta untuk menandai & mencatat lokasi.</span>
+                            </div>
 
-                        <!-- Location List Container -->
-                        <div id="userLocationList" class="flex-1 overflow-y-auto custom-scrollbar p-3 space-y-3 bg-slate-50 dark:bg-slate-950/20">
-                            <!-- Empty State -->
-                            <div id="mapEmptyState" class="h-full flex flex-col items-center justify-center text-center text-slate-400">
-                                <i data-lucide="map-pin-off" class="w-10 h-10 mb-3 opacity-50"></i>
-                                <p class="text-sm px-4">Belum ada catatan lokasi. Klik peta untuk mulai memetakan.</p>
+                            <!-- Location List Container -->
+                            <div id="userLocationList" class="flex-1 overflow-y-auto custom-scrollbar p-3 space-y-3 bg-slate-50 dark:bg-slate-950/20 min-h-0 relative">
+                                <!-- Empty State -->
+                                <div id="mapEmptyState" class="absolute inset-0 flex flex-col items-center justify-center text-center text-slate-400">
+                                    <i data-lucide="map-pin-off" class="w-10 h-10 mb-3 opacity-50"></i>
+                                    <p class="text-sm px-4">Belum ada catatan lokasi. Klik peta untuk mulai memetakan.</p>
+                                </div>
                             </div>
                         </div>
                     </div>
