@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="id" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Digital Map - LOKASYA</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Leaflet Map CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    
+    <!-- Tailwind Config -->
+    <script>
+        tailwind.config = {
+            darkMode: 'media',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    animation: {
+                        'ping-slow': 'ping 3s cubic-bezier(0, 0, 0.2, 1) infinite',
+                        'float': 'float 3s ease-in-out infinite',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-10px)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <style>
+        @keyframes fade-in {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-in {
+            animation: fade-in 0.6s ease-out forwards;
+        }
+        
+        /* Dark mode map adjustments */
+        @media (prefers-color-scheme: dark) {
+            .leaflet-layer,
+            .leaflet-control-zoom-in,
+            .leaflet-control-zoom-out,
+            .leaflet-control-attribution {
+                filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%);
+            }
+        }
+
+        /* Custom Scrollbar */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background-color: #cbd5e1;
+            border-radius: 20px;
+        }
+        .dark .custom-scrollbar::-webkit-scrollbar-thumb {
+            background-color: #475569;
+        }
+        
+        /* Custom Map Marker styles */
+        .marker-pin {
+            width: 30px;
+            height: 30px;
+            border-radius: 50% 50% 50% 0;
+            position: absolute;
+            transform: rotate(-45deg);
+            left: 50%;
+            top: 50%;
+            margin: -15px 0 0 -15px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.3);
+            border: 3px solid white;
+        }
+        .marker-icon {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            color: white;
+            z-index: 10;
+        }
+        
+        /* Categories colors */
+        .pin-properti { background-color: #3b82f6; } /* Blue */
+        .pin-pertanian { background-color: #10b981; } /* Emerald */
+        .pin-retail { background-color: #f59e0b; } /* Amber */
+
+        /* Leaflet popup customization */
+        .leaflet-popup-content-wrapper {
+            border-radius: 0.75rem;
+            padding: 0;
+            overflow: hidden;
+        }
+        .leaflet-popup-content {
+            margin: 0;
+            width: 220px !important;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 dark:bg-slate-950 font-sans text-slate-800 dark:text-slate-200 flex flex-col min-h-screen transition-colors duration-300">
+
+    <!-- Navigation (Simplified for sub-pages) -->
+    <nav class="fixed w-full z-50 bg-white/90 dark:bg-slate-950/90 border-b border-slate-200 dark:border-slate-800 backdrop-blur-md shadow-sm transition-all duration-300">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <!-- Back to Home -->
+                <a href="index.html" class="flex items-center gap-2 text-slate-600 dark:text-slate-300 hover:text-amber-600 dark:hover:text-amber-400 transition-colors group">
+                    <i data-lucide="arrow-left" class="w-5 h-5 group-hover:-translate-x-1 transition-transform"></i>
+                    <span class="font-medium">Kembali ke Beranda</span>
+                </a>
+                
+                <!-- Logo -->
+                <div class="flex items-center gap-2">
+                    <div class="w-8 h-8 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-lg flex items-center justify-center text-white shadow-md">
+                        <i data-lucide="map-pin" class="w-4 h-4"></i>
+                    </div>
+                    <span class="font-bold text-xl tracking-tight text-teal-900 dark:text-teal-400 hidden sm:block">LOKASYA</span>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="flex-grow pt-24 pb-20">
+        
+        <!-- Hero Detail Section -->
+        <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 animate-in">
+            <!-- Breadcrumbs -->
+            <nav class="flex text-sm text-slate-500 dark:text-slate-400 mb-8" aria-label="Breadcrumb">
+                <ol class="inline-flex items-center space-x-1 md:space-x-3">
+                    <li class="inline-flex items-center">
+                        <a href="index.html" class="hover:text-amber-600 dark:hover:text-amber-400 transition-colors">Teknologi Inti</a>
+                    </li>
+                    <li>
+                        <div class="flex items-center">
+                            <i data-lucide="chevron-right" class="w-4 h-4 mx-1"></i>
+                            <span class="text-slate-800 dark:text-slate-200 font-medium">Interactive Digital Map</span>
+                        </div>
+                    </li>
+                </ol>
+            </nav>
+
+            <div class="bg-white dark:bg-slate-900 rounded-3xl shadow-lg border border-slate-100 dark:border-slate-800 overflow-hidden transition-colors mb-12">
+                <div class="grid lg:grid-cols-2">
+                    
+                    <!-- Text Content -->
+                    <div class="p-8 md:p-12 lg:p-16 flex flex-col justify-center">
+                        <div class="w-16 h-16 rounded-2xl flex items-center justify-center mb-6 bg-amber-100 dark:bg-amber-900/40 text-amber-600 dark:text-amber-400">
+                            <i data-lucide="map" class="w-8 h-8"></i>
+                        </div>
+                        <h1 class="text-3xl md:text-4xl font-bold text-slate-900 dark:text-white mb-4 leading-tight">
+                            Peta Eksplorasi Investasi Real-Time
+                        </h1>
+                        <p class="text-lg text-slate-600 dark:text-slate-300 mb-8 leading-relaxed">
+                            Visualisasi data geospasial yang menyajikan sebaran proyek usaha syariah secara transparan. Investor dapat memantau dengan tepat di mana dana mereka dikelola dan memverifikasi keberadaan fisik melalui peta interaktif.
+                        </p>
+                        
+                        <div class="space-y-4">
+                            <div class="flex items-start gap-4">
+                                <div class="mt-1 bg-amber-100 dark:bg-amber-900/50 p-1.5 rounded-full text-amber-600 dark:text-amber-400 shrink-0">
+                                    <i data-lucide="layers" class="w-4 h-4"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-bold text-slate-800 dark:text-slate-200">Klasterisasi Sektoral</h4>
+                                    <p class="text-sm text-slate-600 dark:text-slate-400">Memfilter tampilan proyek berdasarkan sektor industri (Agrikultur, Properti, Retail) untuk diversifikasi portofolio yang mudah.</p>
+                                </div>
+                            </div>
+                            <div class="flex items-start gap-4">
+                                <div class="mt-1 bg-amber-100 dark:bg-amber-900/50 p-1.5 rounded-full text-amber-600 dark:text-amber-400 shrink-0">
+                                    <i data-lucide="navigation" class="w-4 h-4"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-bold text-slate-800 dark:text-slate-200">Navigasi Langsung</h4>
+                                    <p class="text-sm text-slate-600 dark:text-slate-400">Terintegrasi dengan sistem peta global, memungkinkan investor untuk merutekan perjalanan survei langsung ke lokasi usaha.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Visual Representation -->
+                    <div class="bg-slate-50 dark:bg-slate-800/50 p-8 flex items-center justify-center border-l border-slate-100 dark:border-slate-800 relative overflow-hidden transition-colors">
+                        <div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-5 dark:opacity-10"></div>
+                        <div class="absolute top-1/2 right-0 transform translate-x-1/4 -translate-y-1/2 w-80 h-80 bg-amber-400/20 rounded-full blur-3xl"></div>
+                        
+                        <!-- Map Abstract Art -->
+                        <div class="relative z-10 w-full max-w-sm h-64">
+                            <!-- Abstract Map Grid -->
+                            <div class="absolute inset-0 border-[0.5px] border-amber-200 dark:border-amber-900/30 grid grid-cols-4 grid-rows-4 transform rotate-12 scale-110">
+                                <div class="border-[0.5px] border-amber-200 dark:border-amber-900/30"></div><div class="border-[0.5px] border-amber-200 dark:border-amber-900/30"></div><div class="border-[0.5px] border-amber-200 dark:border-amber-900/30"></div><div class="border-[0.5px] border-amber-200 dark:border-amber-900/30"></div>
+                                <div class="border-[0.5px] border-amber-200 dark:border-amber-900/30"></div><div class="border-[0.5px] border-amber-200 dark:border-amber-900/30 bg-amber-100/30 dark:bg-amber-900/20"></div><div class="border-[0.5px] border-amber-200 dark:border-amber-900/30"></div><div class="border-[0.5px] border-amber-200 dark:border-amber-900/30"></div>
+                                <div class="border-[0.5px] border-amber-200 dark:border-amber-900/30"></div><div class="border-[0.5px] border-amber-200 dark:border-amber-900/30"></div><div class="border-[0.5px] border-amber-200 dark:border-amber-900/30 bg-amber-100/20 dark:bg-amber-900/10"></div><div class="border-[0.5px] border-amber-200 dark:border-amber-900/30"></div>
+                                <div class="border-[0.5px] border-amber-200 dark:border-amber-900/30"></div><div class="border-[0.5px] border-amber-200 dark:border-amber-900/30"></div><div class="border-[0.5px] border-amber-200 dark:border-amber-900/30"></div><div class="border-[0.5px] border-amber-200 dark:border-amber-900/30"></div>
+                            </div>
+                            
+                            <!-- Floating Pins -->
+                            <div class="absolute top-1/4 left-1/4 animate-float" style="animation-delay: 0s;">
+                                <div class="relative flex justify-center items-center">
+                                    <div class="absolute w-8 h-8 bg-amber-400 rounded-full animate-ping-slow opacity-50"></div>
+                                    <div class="w-8 h-8 bg-white dark:bg-slate-800 rounded-full flex items-center justify-center shadow-lg border-2 border-amber-500 z-10 text-amber-500"><i data-lucide="map-pin" class="w-4 h-4"></i></div>
+                                </div>
+                            </div>
+                            <div class="absolute top-1/2 right-1/3 animate-float" style="animation-delay: 1.5s;">
+                                <div class="relative flex justify-center items-center">
+                                    <div class="absolute w-6 h-6 bg-emerald-400 rounded-full animate-ping-slow opacity-50"></div>
+                                    <div class="w-6 h-6 bg-white dark:bg-slate-800 rounded-full flex items-center justify-center shadow-lg border-2 border-emerald-500 z-10 text-emerald-500"><i data-lucide="map-pin" class="w-3 h-3"></i></div>
+                                </div>
+                            </div>
+                            <div class="absolute bottom-1/4 left-1/2 animate-float" style="animation-delay: 0.7s;">
+                                <div class="relative flex justify-center items-center">
+                                    <div class="absolute w-7 h-7 bg-blue-400 rounded-full animate-ping-slow opacity-50"></div>
+                                    <div class="w-7 h-7 bg-white dark:bg-slate-800 rounded-full flex items-center justify-center shadow-lg border-2 border-blue-500 z-10 text-blue-500"><i data-lucide="map-pin" class="w-3.5 h-3.5"></i></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Interactive Demo Section -->
+            <div class="mb-16">
+                <div class="mb-6 flex items-center justify-between">
+                    <div>
+                        <h2 class="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                            <i data-lucide="compass" class="text-amber-500"></i>
+                            Demo Interaktif: Eksplorasi Proyek LOKASYA
+                        </h2>
+                        <p class="text-slate-500 dark:text-slate-400 mt-1 text-sm">Gunakan filter untuk mencari sektor investasi. Klik pada pin di peta untuk melihat profil dan status verifikasi proyek.</p>
+                    </div>
+                </div>
+
+                <div class="grid lg:grid-cols-12 gap-6 h-[600px]">
+                    <!-- Sidebar: Filters & Details -->
+                    <div class="lg:col-span-4 flex flex-col gap-4 h-full">
+                        
+                        <!-- Filter Card -->
+                        <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-md p-4">
+                            <h3 class="font-bold text-slate-800 dark:text-slate-100 text-sm mb-3">Filter Sektor Industri</h3>
+                            <div class="flex flex-wrap gap-2">
+                                <button onclick="filterMap('all')" id="btn-all" class="filter-btn active px-3 py-1.5 text-xs font-medium rounded-lg bg-slate-800 text-white dark:bg-slate-200 dark:text-slate-900 transition-colors">Semua</button>
+                                <button onclick="filterMap('properti')" id="btn-properti" class="filter-btn px-3 py-1.5 text-xs font-medium rounded-lg bg-slate-100 text-slate-600 hover:bg-blue-50 hover:text-blue-600 dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-blue-900/30 transition-colors flex items-center gap-1">
+                                    <div class="w-2 h-2 rounded-full bg-blue-500"></div> Properti
+                                </button>
+                                <button onclick="filterMap('pertanian')" id="btn-pertanian" class="filter-btn px-3 py-1.5 text-xs font-medium rounded-lg bg-slate-100 text-slate-600 hover:bg-emerald-50 hover:text-emerald-600 dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-emerald-900/30 transition-colors flex items-center gap-1">
+                                    <div class="w-2 h-2 rounded-full bg-emerald-500"></div> Pertanian
+                                </button>
+                                <button onclick="filterMap('retail')" id="btn-retail" class="filter-btn px-3 py-1.5 text-xs font-medium rounded-lg bg-slate-100 text-slate-600 hover:bg-amber-50 hover:text-amber-600 dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-amber-900/30 transition-colors flex items-center gap-1">
+                                    <div class="w-2 h-2 rounded-full bg-amber-500"></div> Retail UMKM
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Project Detail Card (Dynamic) -->
+                        <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-md flex-1 overflow-hidden flex flex-col relative">
+                            <div class="p-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50">
+                                <h3 class="font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
+                                    <i data-lucide="file-search" class="w-5 h-5 text-amber-500"></i>
+                                    Detail Proyek
+                                </h3>
+                            </div>
+                            
+                            <!-- Initial Empty State -->
+                            <div id="detailEmpty" class="flex-1 flex flex-col items-center justify-center text-center p-6 text-slate-400">
+                                <div class="w-16 h-16 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mb-4">
+                                    <i data-lucide="pointer" class="w-6 h-6 text-slate-300 dark:text-slate-600"></i>
+                                </div>
+                                <p class="text-sm">Klik salah satu pin pada peta untuk melihat detail usaha dan status verifikasi di sini.</p>
+                            </div>
+
+                            <!-- Populated State (Hidden initially) -->
+                            <div id="detailContent" class="hidden flex-1 overflow-y-auto custom-scrollbar p-0">
+                                <!-- Image Header -->
+                                <div class="h-32 w-full bg-slate-200 dark:bg-slate-700 relative">
+                                    <img id="detailImg" src="" alt="Cover" class="w-full h-full object-cover opacity-80" onerror="this.src='https://placehold.co/400x200/1e293b/f8fafc?text=Foto+Lokasi'">
+                                    <div class="absolute bottom-2 left-3 bg-black/60 backdrop-blur text-white text-xs px-2 py-1 rounded border border-white/20 flex items-center gap-1">
+                                        <i data-lucide="camera" class="w-3 h-3"></i> Geotagged
+                                    </div>
+                                </div>
+                                
+                                <div class="p-5">
+                                    <div class="flex justify-between items-start mb-2">
+                                        <h4 id="detailName" class="font-bold text-lg text-slate-900 dark:text-white leading-tight">Nama PT</h4>
+                                        <div id="detailBadge" class="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider">SEKTOR</div>
+                                    </div>
+                                    <p id="detailLoc" class="text-xs text-slate-500 dark:text-slate-400 mb-4 flex items-center gap-1">
+                                        <i data-lucide="map-pin" class="w-3 h-3"></i> <span>Alamat</span>
+                                    </p>
+                                    
+                                    <div class="space-y-3 mb-6">
+                                        <div class="bg-slate-50 dark:bg-slate-800/50 p-3 rounded-lg border border-slate-100 dark:border-slate-700 flex justify-between items-center">
+                                            <span class="text-xs text-slate-600 dark:text-slate-400">Target Dana</span>
+                                            <span id="detailFunding" class="font-mono text-sm font-bold text-slate-800 dark:text-slate-200">Rp 0</span>
+                                        </div>
+                                        <div class="bg-slate-50 dark:bg-slate-800/50 p-3 rounded-lg border border-slate-100 dark:border-slate-700">
+                                            <div class="flex justify-between items-center mb-1">
+                                                <span class="text-xs text-slate-600 dark:text-slate-400">Risk AI Score</span>
+                                                <span id="detailScore" class="text-xs font-bold text-emerald-500">95/100 (Aman)</span>
+                                            </div>
+                                            <div class="w-full bg-slate-200 dark:bg-slate-700 h-1.5 rounded-full overflow-hidden">
+                                                <div id="detailScoreBar" class="bg-emerald-500 h-full w-[95%]"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="border-t border-slate-100 dark:border-slate-700 pt-4">
+                                        <div class="flex items-center gap-2 text-xs font-medium text-emerald-600 dark:text-emerald-400 mb-2">
+                                            <i data-lucide="shield-check" class="w-4 h-4"></i> Legalitas & Fisik Tervalidasi
+                                        </div>
+                                        <button class="w-full bg-amber-500 hover:bg-amber-600 text-white py-2 rounded-lg text-sm font-medium transition-colors">
+                                            Lihat Prospektus
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Map Container -->
+                    <div class="lg:col-span-8 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-md overflow-hidden relative flex flex-col h-full z-0">
+                        <div id="exploreMap" class="w-full flex-1 bg-slate-100 dark:bg-slate-800"></div>
+                        
+                        <!-- Map Legend -->
+                        <div class="absolute bottom-4 right-4 bg-white/90 dark:bg-slate-900/90 backdrop-blur border border-slate-200 dark:border-slate-700 p-3 rounded-xl shadow-lg z-[400] text-xs">
+                            <h4 class="font-bold text-slate-800 dark:text-slate-200 mb-2 border-b border-slate-200 dark:border-slate-700 pb-1">Keterangan</h4>
+                            <div class="space-y-1.5">
+                                <div class="flex items-center gap-2 text-slate-600 dark:text-slate-300"><div class="w-3 h-3 rounded-full bg-blue-500"></div> Properti</div>
+                                <div class="flex items-center gap-2 text-slate-600 dark:text-slate-300"><div class="w-3 h-3 rounded-full bg-emerald-500"></div> Pertanian/Peternakan</div>
+                                <div class="flex items-center gap-2 text-slate-600 dark:text-slate-300"><div class="w-3 h-3 rounded-full bg-amber-500"></div> Retail UMKM</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Detail Section -->
+            <div class="mt-16 grid md:grid-cols-3 gap-8">
+                <div class="md:col-span-3 mb-4">
+                    <h2 class="text-2xl font-bold text-slate-900 dark:text-white border-b border-slate-200 dark:border-slate-800 pb-4 transition-colors">Manfaat Peta Digital LOKASYA</h2>
+                </div>
+                
+                <div class="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 transition-colors">
+                    <div class="w-10 h-10 rounded-full bg-orange-100 dark:bg-orange-900/40 flex items-center justify-center text-orange-600 dark:text-orange-400 mb-4">
+                        <i data-lucide="eye" class="w-5 h-5"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-slate-800 dark:text-slate-100 mb-2">Transparansi Visual Absolute</h3>
+                    <p class="text-slate-600 dark:text-slate-400 text-sm leading-relaxed">
+                        Investor tidak lagi menebak-nebak di mana dana mereka dikelola. Dengan melihat langsung sebaran di peta, memberikan rasa aman dan meminimalisir praktik *Gharar* (ketidakjelasan objek).
+                    </p>
+                </div>
+
+                <div class="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 transition-colors">
+                    <div class="w-10 h-10 rounded-full bg-emerald-100 dark:bg-emerald-900/40 flex items-center justify-center text-emerald-600 dark:text-emerald-400 mb-4">
+                        <i data-lucide="pie-chart" class="w-5 h-5"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-slate-800 dark:text-slate-100 mb-2">Analisis Makro Sektoral</h3>
+                    <p class="text-slate-600 dark:text-slate-400 text-sm leading-relaxed">
+                        Memudahkan pengguna untuk melihat tren pembangunan syariah di suatu daerah. Misalnya, pengguna bisa melihat bahwa daerah Jawa Tengah memiliki banyak potensi di sektor agrikultur yang legal.
+                    </p>
+                </div>
+
+                <div class="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 transition-colors">
+                    <div class="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900/40 flex items-center justify-center text-blue-600 dark:text-blue-400 mb-4">
+                        <i data-lucide="route" class="w-5 h-5"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-slate-800 dark:text-slate-100 mb-2">Due Diligence Mandiri</h3>
+                    <p class="text-slate-600 dark:text-slate-400 text-sm leading-relaxed">
+                        Dengan mengetahui letak koordinat yang pasti, institusi pengawas (seperti DSN-MUI atau OJK) maupun investor individu dapat dengan mudah melakukan inspeksi lapangan secara sewaktu-waktu.
+                    </p>
+                </div>
+            </div>
+            
+        </section>
+    </main>
+
+    <!-- Minimal Footer -->
+    <footer class="bg-slate-900 text-slate-400 py-8 border-t border-slate-800 mt-auto">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-sm">
+            <p>&copy; 2026 LOKASYA by Tim TriRen. Delegasi SHEIF KSEI FEB UNNES.</p>
+        </div>
+    </footer>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    
+    <!-- Script Utama Aplikasi -->
+    <script>
+        // Inisialisasi ikon Lucide
+        lucide.createIcons();
+
+        // 1. DATA DUMMY PROYEK
+        const projectsData = [
+            {
+                id: 1,
+                name: "Perumahan Syariah Darussalam",
+                sector: "properti",
+                lat: -7.005145, 
+                lng: 110.438125, // Sekitar Semarang
+                locText: "Banyumanik, Kota Semarang, Jawa Tengah",
+                funding: "Rp 2.500.000.000",
+                score: 98,
+                image: "https://placehold.co/400x200/1e293b/3b82f6?text=Properti+Syariah",
+                icon: "home"
+            },
+            {
+                id: 2,
+                name: "Koperasi Tani Makmur Berkah",
+                sector: "pertanian",
+                lat: -7.150975, 
+                lng: 110.406924, // Sekitar Ungaran
+                locText: "Ungaran Barat, Kab. Semarang, Jawa Tengah",
+                funding: "Rp 500.000.000",
+                score: 92,
+                image: "https://placehold.co/400x200/1e293b/10b981?text=Lahan+Pertanian",
+                icon: "tractor"
+            },
+            {
+                id: 3,
+                name: "Grosir Halal Mart Pusat",
+                sector: "retail",
+                lat: -6.982631, 
+                lng: 110.420803, // Sekitar Semarang Tengah
+                locText: "Semarang Tengah, Kota Semarang",
+                funding: "Rp 1.200.000.000",
+                score: 95,
+                image: "https://placehold.co/400x200/1e293b/f59e0b?text=Retail+Mart",
+                icon: "shopping-cart"
+            },
+            {
+                id: 4,
+                name: "Peternakan Qurban Nusantara",
+                sector: "pertanian",
+                lat: -7.100123, 
+                lng: 110.350456, // Sekitar Gunung Pati
+                locText: "Gunung Pati, Kota Semarang",
+                funding: "Rp 850.000.000",
+                score: 88,
+                image: "https://placehold.co/400x200/1e293b/10b981?text=Peternakan",
+                icon: "leaf"
+            },
+            {
+                id: 5,
+                name: "Ruko Niaga Syariah 2",
+                sector: "properti",
+                lat: -6.993456, 
+                lng: 110.456789, // Sekitar Pedurungan
+                locText: "Pedurungan, Kota Semarang",
+                funding: "Rp 3.000.000.000",
+                score: 96,
+                image: "https://placehold.co/400x200/1e293b/3b82f6?text=Ruko+Niaga",
+                icon: "building"
+            }
+        ];
+
+        let map;
+        let markers = [];
+
+        // 2. INISIALISASI PETA
+        document.addEventListener('DOMContentLoaded', () => {
+            // Fokus di area Semarang (Mengingat UNNES)
+            map = L.map('exploreMap').setView([-7.0500, 110.4200], 11);
+
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 18,
+                attribution: '&copy; OpenStreetMap contributors'
+            }).addTo(map);
+
+            // Render semua marker awal
+            renderMarkers('all');
+        });
+
+        // 3. FUNGSI RENDER MARKER BERDASARKAN FILTER
+        function renderMarkers(filterSector) {
+            // Hapus marker yang ada di peta
+            markers.forEach(m => map.removeLayer(m));
+            markers = [];
+
+            const filteredData = filterSector === 'all' 
+                ? projectsData 
+                : projectsData.filter(p => p.sector === filterSector);
+
+            filteredData.forEach(project => {
+                // Buat icon HTML kustom berdasarkan sektor
+                const customIcon = L.divIcon({
+                    className: 'custom-div-icon',
+                    html: `<div class='marker-pin pin-${project.sector}'></div>
+                           <i data-lucide="${project.icon}" class="marker-icon w-4 h-4 text-white"></i>`,
+                    iconSize: [30, 42],
+                    iconAnchor: [15, 42],
+                    popupAnchor: [0, -35]
+                });
+
+                // Popup kecil saat di hover/klik
+                const popupContent = `
+                    <div class="p-2 w-[200px]">
+                        <h4 class="font-bold text-slate-800 text-sm mb-1">${project.name}</h4>
+                        <div class="text-[10px] text-slate-500 mb-2 line-clamp-1">${project.locText}</div>
+                        <button onclick="showDetail(${project.id})" class="w-full bg-amber-500 text-white text-xs py-1 rounded">Lihat Info</button>
+                    </div>
+                `;
+
+                const marker = L.marker([project.lat, project.lng], {icon: customIcon})
+                    .addTo(map)
+                    .bindPopup(popupContent);
+                
+                // Event listener saat marker diklik (selain membuka popup, juga update sidebar)
+                marker.on('click', () => {
+                    showDetail(project.id);
+                });
+
+                markers.push(marker);
+            });
+            
+            lucide.createIcons();
+            
+            // Adjust map view to fit markers if there are any
+            if (markers.length > 0) {
+                const group = new L.featureGroup(markers);
+                map.fitBounds(group.getBounds(), {padding: [50, 50], maxZoom: 14});
+            }
+        }
+
+        // 4. FUNGSI FILTERING (Tombol Sidebar)
+        window.filterMap = function(sector) {
+            // Update UI Button states
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.className = "filter-btn px-3 py-1.5 text-xs font-medium rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-slate-700 transition-colors flex items-center gap-1";
+            });
+            
+            const activeBtn = document.getElementById(`btn-${sector}`);
+            activeBtn.className = "filter-btn active px-3 py-1.5 text-xs font-medium rounded-lg bg-slate-800 text-white dark:bg-slate-200 dark:text-slate-900 transition-colors flex items-center gap-1";
+
+            // Render ulang peta
+            renderMarkers(sector);
+            
+            // Sembunyikan detail card
+            document.getElementById('detailEmpty').classList.remove('hidden');
+            document.getElementById('detailEmpty').classList.add('flex');
+            document.getElementById('detailContent').classList.add('hidden');
+            document.getElementById('detailContent').classList.remove('flex');
+        }
+
+        // 5. FUNGSI MENAMPILKAN DETAIL PROYEK DI SIDEBAR
+        window.showDetail = function(projectId) {
+            const project = projectsData.find(p => p.id === projectId);
+            if(!project) return;
+
+            // Sembunyikan empty state, tampilkan konten
+            document.getElementById('detailEmpty').classList.add('hidden');
+            document.getElementById('detailEmpty').classList.remove('flex');
+            document.getElementById('detailContent').classList.remove('hidden');
+            document.getElementById('detailContent').classList.add('flex', 'flex-col', 'animate-in');
+
+            // Set Data
+            document.getElementById('detailImg').src = project.image;
+            document.getElementById('detailName').innerText = project.name;
+            document.getElementById('detailLoc').innerHTML = `<i data-lucide="map-pin" class="w-3 h-3 text-slate-400"></i> <span>${project.locText}</span>`;
+            document.getElementById('detailFunding').innerText = project.funding;
+            
+            const scoreEl = document.getElementById('detailScore');
+            const scoreBar = document.getElementById('detailScoreBar');
+            scoreEl.innerText = `${project.score}/100 (Aman)`;
+            scoreBar.style.width = `${project.score}%`;
+            
+            // Set Badge Color
+            const badge = document.getElementById('detailBadge');
+            badge.innerText = project.sector;
+            if(project.sector === 'properti') {
+                badge.className = "px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-400";
+            } else if(project.sector === 'pertanian') {
+                badge.className = "px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-400";
+            } else {
+                badge.className = "px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-amber-100 text-amber-700 dark:bg-amber-900/50 dark:text-amber-400";
+            }
+
+            // Re-render icon lucide yang baru diinject
+            lucide.createIcons();
+        }
+
+    </script>
+</body>
+</html>
