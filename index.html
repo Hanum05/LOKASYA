@@ -1,624 +1,599 @@
-import React, { useState, useEffect } from 'react';
-import { 
-  MapPin, 
-  ShieldCheck, 
-  BrainCircuit, 
-  Database, 
-  Map, 
-  Lock, 
-  ChevronRight, 
-  Menu, 
-  X, 
-  AlertTriangle, 
-  TrendingUp,
-  Globe,
-  ArrowLeft
-} from 'lucide-react';
-
-// --- Data Fitur ---
-const featuresData = [
-  {
-    id: 'web',
-    icon: <Globe size={32} />,
-    title: "Web GeoFintech Platform",
-    desc: "Media akses utama pengguna untuk registrasi, memantau portofolio, dan mengakses data perusahaan secara real-time.",
-    fullDesc: "Web GeoFintech Platform merupakan komponen utama yang berfungsi sebagai media akses layanan investasi syariah digital berbasis website. Platform ini memungkinkan pengguna untuk melakukan registrasi, memantau aktivitas investasi, mengakses informasi legalitas perusahaan, serta memperoleh data investasi secara real-time.",
-    color: "bg-blue-100 text-blue-600",
-    colorGradient: "from-blue-400 to-blue-600"
-  },
-  {
-    id: 'geo',
-    icon: <MapPin size={32} />,
-    title: "Geotagging System",
-    desc: "Validasi lokasi operasional menggunakan koordinat GPS. Memastikan keberadaan fisik usaha untuk cegah investasi fiktif.",
-    fullDesc: "Geotagging System digunakan untuk memvalidasi lokasi operasional perusahaan investasi melalui koordinat GPS dan integrasi peta digital. Sistem ini membantu memastikan keberadaan fisik perusahaan sehingga dapat meminimalisasi risiko investasi fiktif dan penipuan digital.",
-    color: "bg-emerald-100 text-emerald-600",
-    colorGradient: "from-emerald-400 to-teal-600"
-  },
-  {
-    id: 'cloud',
-    icon: <Database size={32} />,
-    title: "Cloud Database",
-    desc: "Pusat penyimpanan aman untuk data legalitas, riwayat transaksi, dan aktivitas sistem yang dapat diakses dengan cepat.",
-    fullDesc: "Cloud Database berfungsi sebagai pusat penyimpanan data yang mencakup legalitas perusahaan, riwayat transaksi investasi, data pengguna, serta aktivitas sistem lainnya. Penyimpanan berbasis cloud memungkinkan data tersimpan secara aman, terstruktur, dan dapat diakses secara cepat.",
-    color: "bg-purple-100 text-purple-600",
-    colorGradient: "from-purple-400 to-indigo-600"
-  },
-  {
-    id: 'ai',
-    icon: <BrainCircuit size={32} />,
-    title: "Smart Risk Detection (AI)",
-    desc: "Kecerdasan buatan untuk menganalisis pola transaksi dan mendeteksi indikasi fraud atau investasi ilegal secara otomatis.",
-    fullDesc: "Smart Risk Detection merupakan sistem berbasis Artificial Intelligence (AI) yang digunakan untuk mendeteksi aktivitas mencurigakan dan indikasi investasi ilegal secara otomatis. Sistem ini bekerja dengan menganalisis pola transaksi dan aktivitas perusahaan investasi secara real-time.",
-    color: "bg-rose-100 text-rose-600",
-    colorGradient: "from-rose-400 to-red-600"
-  },
-  {
-    id: 'map',
-    icon: <Map size={32} />,
-    title: "Interactive Digital Map",
-    desc: "Visualisasi peta interaktif yang menampilkan persebaran lokasi perusahaan investasi syariah yang legal.",
-    fullDesc: "Interactive Digital Map berfungsi menampilkan persebaran perusahaan investasi syariah legal dalam bentuk visualisasi peta digital interaktif. Melalui fitur ini, pengguna dapat melihat lokasi perusahaan secara langsung sehingga meningkatkan transparansi dan validitas informasi investasi.",
-    color: "bg-amber-100 text-amber-600",
-    colorGradient: "from-amber-400 to-orange-500"
-  },
-  {
-    id: 'security',
-    icon: <Lock size={32} />,
-    title: "Security & Encryption",
-    desc: "Sistem enkripsi tingkat tinggi untuk melindungi data pribadi dan aktivitas transaksi pengguna dari kebocoran cyber.",
-    fullDesc: "Security and Encryption System digunakan untuk melindungi keamanan data pengguna dan aktivitas transaksi digital melalui sistem enkripsi dan keamanan siber. Komponen ini bertujuan mencegah kebocoran data serta menjaga kerahasiaan informasi pengguna dalam platform LOKASYA.",
-    color: "bg-slate-200 text-slate-700",
-    colorGradient: "from-slate-400 to-slate-600"
-  }
-];
-
-// --- Komponen Halaman ---
-
-const Home = ({ navigateTo, onSelectFeature }) => (
-  <div className="animate-in fade-in duration-500">
-    {/* Hero Section */}
-    <section className="relative pt-32 pb-20 lg:pt-48 lg:pb-32 overflow-hidden">
-      <div className="absolute inset-0 z-0">
-        <div className="absolute inset-0 bg-gradient-to-b from-emerald-50/50 to-slate-50/20"></div>
-        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-teal-200/40 rounded-full mix-blend-multiply filter blur-3xl opacity-50 translate-x-1/3 -translate-y-1/4"></div>
-        <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-emerald-200/40 rounded-full mix-blend-multiply filter blur-3xl opacity-50 -translate-x-1/3 translate-y-1/4"></div>
-      </div>
-
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        <div className="grid lg:grid-cols-2 gap-12 items-center">
-          <div>
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-teal-100 text-teal-800 font-medium text-sm mb-6 border border-teal-200">
-              <ShieldCheck size={16} />
-              <span>Inovasi Fintech Syariah 2026</span>
-            </div>
-            <h1 className="text-5xl lg:text-6xl font-extrabold text-slate-900 leading-tight mb-6">
-              Investasi Syariah <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-600 to-emerald-500">Aman & Terverifikasi</span>
-            </h1>
-            <p className="text-lg text-slate-600 mb-8 leading-relaxed">
-              Platform Web GeoFintech Cerdas berbasis Geotagging untuk memvalidasi lokasi fisik usaha dan mencegah investasi fiktif. Tingkatkan keamanan dan transparansi investasi syariah Anda.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4">
-              <button onClick={() => navigateTo('tentang')} className="flex items-center justify-center gap-2 bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-700 hover:to-emerald-700 text-white px-8 py-4 rounded-full font-bold text-lg transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-1">
-                Pelajari LOKASYA
-                <ChevronRight size={20} />
-              </button>
-            </div>
-          </div>
-          
-          <div className="relative mx-auto w-full max-w-md lg:max-w-full">
-            <div className="bg-white p-2 rounded-2xl shadow-2xl border border-slate-100 transform rotate-2 hover:rotate-0 transition-transform duration-500">
-              <div className="bg-slate-50 rounded-xl overflow-hidden border border-slate-100">
-                <div className="h-10 bg-slate-100 flex items-center px-4 gap-2 border-b border-slate-200">
-                  <div className="w-3 h-3 rounded-full bg-red-400"></div>
-                  <div className="w-3 h-3 rounded-full bg-amber-400"></div>
-                  <div className="w-3 h-3 rounded-full bg-green-400"></div>
-                </div>
-                <div className="p-6">
-                  <div className="flex justify-between items-center mb-6">
-                    <div>
-                      <h3 className="font-bold text-slate-800">Dashboard Keamanan</h3>
-                      <p className="text-xs text-slate-500">Real-time monitoring</p>
-                    </div>
-                    <span className="bg-emerald-100 text-emerald-700 text-xs font-bold px-3 py-1 rounded-full">Aman</span>
-                  </div>
-                  
-                  <div className="w-full h-48 bg-teal-50 rounded-lg border border-teal-100 mb-4 relative overflow-hidden flex items-center justify-center">
-                      <Map className="absolute w-full h-full text-teal-100/50 scale-150" />
-                      <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10"></div>
-                      <div className="absolute top-12 left-16 flex flex-col items-center animate-bounce">
-                        <div className="bg-emerald-500 p-1.5 rounded-full text-white shadow-lg"><MapPin size={16} /></div>
-                        <div className="bg-white text-[10px] font-bold px-2 py-0.5 rounded shadow mt-1">PT Agro Syariah</div>
-                      </div>
-                      <div className="absolute bottom-10 right-20 flex flex-col items-center">
-                        <div className="bg-emerald-500 p-1.5 rounded-full text-white shadow-lg"><MapPin size={16} /></div>
-                        <div className="bg-white text-[10px] font-bold px-2 py-0.5 rounded shadow mt-1">Properti Halal</div>
-                      </div>
-                  </div>
-
-                  <div className="space-y-3">
-                    <div className="flex items-center gap-3 p-3 bg-white rounded-lg border border-slate-100 shadow-sm">
-                      <div className="bg-blue-100 p-2 rounded-lg text-blue-600"><ShieldCheck size={16} /></div>
-                      <div className="flex-1">
-                        <div className="text-sm font-bold text-slate-800">Legalitas Tervalidasi</div>
-                        <div className="text-xs text-slate-500">OJK & DSN-MUI</div>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-3 p-3 bg-white rounded-lg border border-slate-100 shadow-sm">
-                      <div className="bg-purple-100 p-2 rounded-lg text-purple-600"><BrainCircuit size={16} /></div>
-                      <div className="flex-1">
-                        <div className="text-sm font-bold text-slate-800">AI Risk Status</div>
-                        <div className="text-xs text-emerald-500 font-medium">Low Risk (98% Aman)</div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    {/* Section Fitur (Menjadi Grid Navigasi di Beranda) */}
-    <section className="py-24 bg-white border-t border-slate-100">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center max-w-3xl mx-auto mb-16">
-          <span className="text-teal-600 font-bold tracking-wider uppercase text-sm">Teknologi Inti LOKASYA</span>
-          <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mt-2 mb-4">6 Komponen Utama Sistem</h2>
-          <p className="text-slate-600 text-lg">Pilih dan klik kotak fitur di bawah ini untuk mempelajari lebih detail tentang teknologi yang kami gunakan.</p>
-        </div>
-
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {featuresData.map((feature, idx) => (
-            <button 
-              key={idx} 
-              onClick={() => onSelectFeature(feature)}
-              className="text-left bg-slate-50 p-8 rounded-2xl shadow-sm border border-slate-100 hover:shadow-xl hover:-translate-y-2 transition-all duration-300 group focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 relative overflow-hidden"
-            >
-              <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-transparent to-slate-200/50 rounded-bl-full -z-10 group-hover:scale-125 transition-transform duration-500"></div>
-              
-              <div className={`w-16 h-16 rounded-2xl flex items-center justify-center mb-6 transition-transform duration-500 group-hover:scale-110 group-hover:rotate-3 ${feature.color}`}>
-                {feature.icon}
-              </div>
-              <h3 className="text-xl font-bold text-slate-800 mb-3 group-hover:text-teal-700 transition-colors">{feature.title}</h3>
-              <p className="text-slate-600 text-sm leading-relaxed mb-6">{feature.desc}</p>
-              
-              <div className="flex items-center text-teal-600 font-bold text-sm opacity-0 group-hover:opacity-100 transform -translate-x-4 group-hover:translate-x-0 transition-all duration-300">
-                Lihat Detail <ChevronRight size={16} className="ml-1" />
-              </div>
-            </button>
-          ))}
-        </div>
-      </div>
-    </section>
-  </div>
-);
-
-// Halaman Detail untuk masing-masing Fitur
-const FeatureDetail = ({ feature, navigateTo }) => {
-  if (!feature) {
-    navigateTo('home');
-    return null;
-  }
-
-  return (
-    <section className="pt-32 pb-20 bg-slate-50 min-h-screen animate-in fade-in duration-500">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        <button 
-          onClick={() => navigateTo('home')}
-          className="flex items-center text-slate-500 hover:text-teal-600 font-medium mb-10 transition-colors group bg-white px-4 py-2 rounded-full shadow-sm border border-slate-200 w-fit"
-        >
-          <ArrowLeft size={18} className="mr-2 transform group-hover:-translate-x-1 transition-transform" />
-          Kembali ke Beranda
-        </button>
-
-        <div className="bg-white rounded-3xl p-8 md:p-12 border border-slate-100 shadow-xl relative overflow-hidden">
-          <div className={`absolute top-0 left-0 w-full h-3 bg-gradient-to-r ${feature.colorGradient}`}></div>
-          <div className={`absolute -top-24 -right-24 w-64 h-64 rounded-full opacity-10 blur-3xl ${feature.color.split(' ')[0]}`}></div>
-          
-          <div className="flex flex-col md:flex-row gap-8 items-start relative z-10">
-            <div className={`w-24 h-24 rounded-3xl flex items-center justify-center shrink-0 shadow-lg ${feature.color}`}>
-              {React.cloneElement(feature.icon, { size: 48 })}
-            </div>
-            
-            <div>
-              <div className="inline-block px-4 py-1.5 bg-slate-100 text-slate-600 text-xs font-bold rounded-full mb-4 uppercase tracking-wider">
-                Detail Komponen Sistem
-              </div>
-              <h1 className="text-3xl md:text-4xl font-bold text-slate-900 mb-6">{feature.title}</h1>
-              <p className="text-slate-600 leading-relaxed text-lg mb-8">
-                {feature.fullDesc}
-              </p>
-              
-              <div className="bg-slate-50 p-6 rounded-2xl border border-slate-100">
-                <h4 className="font-bold text-slate-800 mb-2 flex items-center gap-2">
-                  <ShieldCheck size={20} className="text-teal-600" /> Manfaat Utama
-                </h4>
-                <p className="text-sm text-slate-600">
-                  Mendukung transparansi dan keamanan transaksi investasi syariah Anda dengan memastikan validitas dan menekan risiko fraud secara proaktif.
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-};
-
-const Masalah = () => (
-  <section className="pt-32 pb-20 bg-white min-h-screen animate-in fade-in duration-500">
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div className="text-center max-w-3xl mx-auto mb-16">
-        <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4">Mengapa LOKASYA Hadir?</h2>
-        <p className="text-lg text-slate-600 leading-relaxed">
-          Warren Buffett pernah berkata, <span className="italic font-medium">"Risk comes from not knowing what you are doing."</span> Di era digital, kurangnya transparansi menjadi ancaman nyata.
-        </p>
-      </div>
-
-      <div className="grid md:grid-cols-3 gap-8">
-        <div className="bg-slate-50 rounded-2xl p-8 border border-slate-100 hover:shadow-lg transition-shadow">
-          <div className="w-14 h-14 bg-red-100 rounded-xl flex items-center justify-center text-red-600 mb-6">
-            <AlertTriangle size={28} />
-          </div>
-          <h3 className="text-xl font-bold text-slate-800 mb-3">Maraknya Investasi Bodong</h3>
-          <p className="text-slate-600 text-sm leading-relaxed">
-            Kemudahan akses digital sering dimanfaatkan untuk skema investasi fiktif berkedok syariah yang telah merugikan masyarakat triliunan rupiah.
-          </p>
-        </div>
-        
-        <div className="bg-slate-50 rounded-2xl p-8 border border-slate-100 hover:shadow-lg transition-shadow">
-          <div className="w-14 h-14 bg-orange-100 rounded-xl flex items-center justify-center text-orange-600 mb-6">
-            <Map size={28} />
-          </div>
-          <h3 className="text-xl font-bold text-slate-800 mb-3">Lokasi Usaha Fiktif</h3>
-          <p className="text-slate-600 text-sm leading-relaxed">
-            Banyak platform ilegal menawarkan return tinggi tanpa transparansi data perusahaan dan kejelasan lokasi usaha fisik yang nyata.
-          </p>
-        </div>
-
-        <div className="bg-slate-50 rounded-2xl p-8 border border-slate-100 hover:shadow-lg transition-shadow">
-          <div className="w-14 h-14 bg-blue-100 rounded-xl flex items-center justify-center text-blue-600 mb-6">
-            <TrendingUp size={28} />
-          </div>
-          <h3 className="text-xl font-bold text-slate-800 mb-3">Rendahnya Literasi Digital</h3>
-          <p className="text-slate-600 text-sm leading-relaxed">
-            Masyarakat masih kesulitan membedakan platform legal dan ilegal karena minimnya sistem verifikasi yang transparan dan mudah dipahami.
-          </p>
-        </div>
-      </div>
-    </div>
-  </section>
-);
-
-const Tentang = () => (
-  <section className="pt-32 pb-20 bg-gradient-to-br from-teal-900 to-slate-900 text-white relative overflow-hidden min-h-screen animate-in fade-in duration-500">
-    <div className="absolute top-0 left-0 w-full h-full overflow-hidden opacity-10">
-      <svg className="absolute left-0 top-0 h-full w-full" viewBox="0 0 100 100" preserveAspectRatio="none">
-        <path d="M0,0 L100,0 L100,100 L0,100 Z" fill="url(#grid)"></path>
-        <defs>
-          <pattern id="grid" width="8" height="8" patternUnits="userSpaceOnUse">
-            <path d="M 8 0 L 0 0 0 8" fill="none" stroke="white" strokeWidth="0.5"></path>
-          </pattern>
-        </defs>
-      </svg>
-    </div>
+<!DOCTYPE html>
+<html lang="id" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LOKASYA - Web GeoFintech Syariah</title>
     
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-      <div className="grid lg:grid-cols-2 gap-16 items-center">
-        <div>
-          <h2 className="text-3xl md:text-4xl font-bold mb-6 leading-tight">Mengenal LOKASYA</h2>
-          <p className="text-teal-100 text-lg mb-6 leading-relaxed">
-            <strong className="text-white">LOKASYA</strong> (Lokasi & Syariah) adalah inovasi Web GeoFintech berbasis geotagging yang dirancang untuk merevolusi keamanan investasi syariah digital di Indonesia.
-          </p>
-          <p className="text-teal-100/80 mb-8 leading-relaxed">
-            Kami mengintegrasikan teknologi financial technology (fintech), data geospasial, dan kecerdasan buatan (AI) untuk membantu masyarakat mengidentifikasi platform investasi syariah yang legal, nyata secara fisik, dan terpercaya.
-          </p>
-          
-          <ul className="space-y-4">
-            {[
-              "Validasi lokasi usaha secara real-time",
-              "Transparansi data perusahaan",
-              "Mencegah praktik investasi fiktif (Gharar)"
-            ].map((item, idx) => (
-              <li key={idx} className="flex items-center gap-3 text-teal-50">
-                <div className="bg-teal-500/20 p-1 rounded-full text-teal-400">
-                  <ShieldCheck size={20} />
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind Config -->
+    <script>
+        tailwind.config = {
+            darkMode: 'media', // OTOMATIS: Mengikuti mode layar dari OS perangkat pengguna
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <style>
+        /* Custom Animations */
+        @keyframes fade-in {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-in {
+            animation: fade-in 0.5s ease-out forwards;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 dark:bg-slate-950 font-sans text-slate-800 dark:text-slate-200 flex flex-col min-h-screen transition-colors duration-300">
+
+    <!-- Navigation -->
+    <nav class="fixed w-full z-50 bg-white/90 dark:bg-slate-950/90 border-b border-transparent dark:border-slate-800 backdrop-blur-md shadow-sm transition-all duration-300">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-20">
+                <!-- Logo -->
+                <a href="index.html" class="flex items-center gap-2 group outline-none">
+                    <div class="w-10 h-10 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center text-white shadow-lg transform group-hover:scale-105 transition-transform">
+                        <i data-lucide="map-pin"></i>
+                    </div>
+                    <span class="font-bold text-2xl tracking-tight text-teal-900 dark:text-teal-400">LOKASYA</span>
+                </a>
+                
+                <!-- Desktop Menu -->
+                <div class="hidden md:flex items-center space-x-6 lg:space-x-8">
+                    <a href="#" onclick="navigate('beranda', event)" data-page="beranda" class="nav-desktop-link font-medium transition-colors text-teal-600 dark:text-teal-400 border-b-2 border-teal-600 dark:border-teal-400 pb-1">Beranda</a>
+                    <a href="#" onclick="navigate('masalah', event)" data-page="masalah" class="nav-desktop-link font-medium text-slate-600 dark:text-slate-300 hover:text-teal-600 dark:hover:text-teal-400 transition-colors">Masalah</a>
+                    <a href="#" onclick="navigate('tentang', event)" data-page="tentang" class="nav-desktop-link font-medium text-slate-600 dark:text-slate-300 hover:text-teal-600 dark:hover:text-teal-400 transition-colors">Tentang</a>
+                    <a href="#" onclick="navigate('cara-kerja', event)" data-page="cara-kerja" class="nav-desktop-link font-medium text-slate-600 dark:text-slate-300 hover:text-teal-600 dark:hover:text-teal-400 transition-colors">Cara Kerja</a>
+                    <a href="#" onclick="navigate('tim', event)" data-page="tim" class="nav-desktop-link font-medium text-slate-600 dark:text-slate-300 hover:text-teal-600 dark:hover:text-teal-400 transition-colors">Tim</a>
+                    <button class="bg-teal-600 hover:bg-teal-700 text-white px-6 py-2.5 rounded-full font-semibold transition-all shadow-md hover:shadow-lg transform hover:-translate-y-0.5 ml-4">
+                        Coba Demo
+                    </button>
                 </div>
-                {item}
-              </li>
-            ))}
-          </ul>
-        </div>
-        
-        <div className="relative">
-           <div className="absolute inset-0 bg-gradient-to-r from-teal-500 to-emerald-500 blur-3xl opacity-30 rounded-full"></div>
-           <div className="bg-slate-800/50 backdrop-blur-xl border border-slate-700 p-8 rounded-3xl relative">
-              <div className="text-center mb-8">
-                 <h3 className="text-2xl font-bold text-white mb-2">Perbandingan Sistem</h3>
-                 <p className="text-slate-400 text-sm">Fintech Konvensional vs LOKASYA GeoFintech</p>
-              </div>
-              
-              <div className="space-y-6">
-                 <div>
-                    <div className="flex justify-between text-sm mb-2">
-                       <span className="text-slate-300">Validasi Data (Fintech Biasa)</span>
-                       <span className="text-slate-400">60%</span>
-                    </div>
-                    <div className="w-full bg-slate-700 rounded-full h-2">
-                       <div className="bg-slate-500 h-2 rounded-full" style={{width: '60%'}}></div>
-                    </div>
-                 </div>
-                 <div>
-                    <div className="flex justify-between text-sm mb-2">
-                       <span className="text-emerald-400 font-bold">Validasi Data + Geotagging (LOKASYA)</span>
-                       <span className="text-emerald-400 font-bold">99%</span>
-                    </div>
-                    <div className="w-full bg-slate-700 rounded-full h-2">
-                       <div className="bg-gradient-to-r from-teal-400 to-emerald-400 h-2 rounded-full relative" style={{width: '99%'}}>
-                          <div className="absolute right-0 top-1/2 -translate-y-1/2 w-4 h-4 bg-white rounded-full shadow blur-[2px]"></div>
-                       </div>
-                    </div>
-                 </div>
-                 <p className="text-xs text-slate-400 italic mt-4 text-center">Berdasarkan data penelitian Rahman & Sari (2022) & Inovasi LOKASYA.</p>
-              </div>
-           </div>
-        </div>
-      </div>
-    </div>
-  </section>
-);
 
-const CaraKerja = () => (
-  <section className="pt-32 pb-20 bg-white min-h-screen animate-in fade-in duration-500">
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div className="text-center mb-16">
-        <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4">Mekanisme Kerja Sistem</h2>
-        <p className="text-slate-600 text-lg">Alur verifikasi yang transparan dan aman di LOKASYA.</p>
-      </div>
-
-      <div className="relative mt-20">
-        <div className="hidden md:block absolute top-1/2 left-0 w-full h-1 bg-gradient-to-r from-teal-100 via-teal-300 to-emerald-100 -translate-y-1/2 z-0"></div>
-        
-        <div className="grid md:grid-cols-4 gap-8 relative z-10">
-          {[
-            { step: "01", title: "Registrasi & Legalitas", desc: "Perusahaan mendaftar dan mengunggah dokumen legalitas serta identitas usaha." },
-            { step: "02", title: "Validasi Geotagging", desc: "Sistem memvalidasi lokasi operasional via GPS secara akurat dan real-time." },
-            { step: "03", title: "Analisis AI & Cloud", desc: "Data disimpan di Cloud dan dianalisis oleh AI untuk deteksi potensi fraud." },
-            { step: "04", title: "Dashboard Publik", desc: "Pengguna melihat status legalitas, lokasi, dan keamanan di dashboard interaktif." }
-          ].map((item, idx) => (
-            <div key={idx} className="relative flex flex-col items-center text-center bg-white md:bg-transparent p-6 rounded-2xl md:p-0 md:rounded-none shadow-sm md:shadow-none border border-slate-100 md:border-none">
-              <div className="w-16 h-16 bg-gradient-to-br from-teal-500 to-emerald-600 rounded-full flex items-center justify-center text-white font-bold text-xl shadow-lg border-4 border-white mb-6 z-10">
-                {item.step}
-              </div>
-              <h3 className="text-lg font-bold text-slate-800 mb-2">{item.title}</h3>
-              <p className="text-sm text-slate-500">{item.desc}</p>
+                <!-- Mobile Menu Button -->
+                <div class="md:hidden flex items-center">
+                    <button id="mobile-menu-btn" class="text-slate-600 dark:text-slate-300 outline-none">
+                        <i data-lucide="menu" id="menu-icon"></i>
+                    </button>
+                </div>
             </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  </section>
-);
-
-const Tim = () => (
-  <section className="pt-32 pb-20 bg-slate-50 min-h-screen animate-in fade-in duration-500">
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div className="text-center mb-16">
-        <span className="bg-teal-100 text-teal-800 text-sm font-bold px-4 py-1.5 rounded-full mb-4 inline-block">Tim Pengembang</span>
-        <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mt-4 mb-2">TriRen</h2>
-        <p className="text-slate-600 text-lg">Delegasi SHEIF KSEI FEB UNNES 2026</p>
-      </div>
-
-      <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
-        {/* Anggota 1 */}
-        <div className="bg-white rounded-3xl p-8 text-center border border-slate-100 shadow-sm hover:shadow-xl transition-all duration-300">
-          <div className="w-24 h-24 bg-gradient-to-br from-emerald-100 to-teal-100 rounded-full mx-auto mb-6 flex items-center justify-center">
-            <span className="text-3xl font-bold text-teal-600">AR</span>
-          </div>
-          <h3 className="text-xl font-bold text-slate-800 mb-1">Aulia Rahma Hanum</h3>
-          <p className="text-teal-600 font-medium text-sm mb-4">Ketua Tim</p>
-          <div className="w-full h-px bg-slate-100 mb-4"></div>
-          <p className="text-slate-500 text-sm">Instansi: [Nama Universitas]</p>
         </div>
 
-        {/* Anggota 2 */}
-        <div className="bg-white rounded-3xl p-8 text-center border border-slate-100 shadow-sm hover:shadow-xl transition-all duration-300 md:-translate-y-4">
-          <div className="w-24 h-24 bg-gradient-to-br from-emerald-100 to-teal-100 rounded-full mx-auto mb-6 flex items-center justify-center">
-            <span className="text-3xl font-bold text-teal-600">NZ</span>
-          </div>
-          <h3 className="text-xl font-bold text-slate-800 mb-1">Nabilla Zhulva Santoso</h3>
-          <p className="text-teal-600 font-medium text-sm mb-4">Anggota</p>
-          <div className="w-full h-px bg-slate-100 mb-4"></div>
-          <p className="text-slate-500 text-sm">Instansi: [Nama Universitas]</p>
+        <!-- Mobile Menu (Hidden by default) -->
+        <div id="mobile-menu" class="hidden md:hidden bg-white dark:bg-slate-900 border-t border-slate-100 dark:border-slate-800 p-4 shadow-lg absolute w-full transition-colors duration-300">
+            <div class="flex flex-col space-y-2">
+                <a href="#" onclick="navigate('beranda', event)" data-page="beranda" class="nav-mobile-link block text-left font-medium p-3 rounded-lg bg-teal-50 dark:bg-teal-900/50 text-teal-700 dark:text-teal-300">Beranda</a>
+                <a href="#" onclick="navigate('masalah', event)" data-page="masalah" class="nav-mobile-link block text-left font-medium p-3 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800">Masalah</a>
+                <a href="#" onclick="navigate('tentang', event)" data-page="tentang" class="nav-mobile-link block text-left font-medium p-3 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800">Tentang</a>
+                <a href="#" onclick="navigate('cara-kerja', event)" data-page="cara-kerja" class="nav-mobile-link block text-left font-medium p-3 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800">Cara Kerja</a>
+                <a href="#" onclick="navigate('tim', event)" data-page="tim" class="nav-mobile-link block text-left font-medium p-3 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800">Tim</a>
+                <button class="bg-teal-600 hover:bg-teal-700 text-white px-4 py-3 rounded-lg font-medium w-full mt-4 shadow-sm transition-colors">
+                    Coba Demo
+                </button>
+            </div>
         </div>
+    </nav>
 
-        {/* Anggota 3 */}
-        <div className="bg-white rounded-3xl p-8 text-center border border-slate-100 shadow-sm hover:shadow-xl transition-all duration-300">
-          <div className="w-24 h-24 bg-gradient-to-br from-emerald-100 to-teal-100 rounded-full mx-auto mb-6 flex items-center justify-center">
-            <span className="text-3xl font-bold text-teal-600">FR</span>
-          </div>
-          <h3 className="text-xl font-bold text-slate-800 mb-1">Fadhly Ramadhan Arieyanto</h3>
-          <p className="text-teal-600 font-medium text-sm mb-4">Anggota</p>
-          <div className="w-full h-px bg-slate-100 mb-4"></div>
-          <p className="text-slate-500 text-sm">Instansi: [Nama Universitas]</p>
-        </div>
-      </div>
-    </div>
-  </section>
-);
+    <!-- Main Content -->
+    <main class="flex-grow">
+        
+        <!-- Pembungkus Halaman Beranda (Hero & Fitur) -->
+        <div id="beranda" class="page-section block animate-in">
+        
+        <!-- Hero Section -->
+        <section class="relative pt-32 pb-20 lg:pt-48 lg:pb-32 overflow-hidden transition-colors duration-300">
+            <!-- Background Elements -->
+            <div class="absolute inset-0 z-0">
+                <div class="absolute inset-0 bg-gradient-to-b from-emerald-50/50 to-slate-50/20 dark:from-emerald-950/30 dark:to-slate-950/20"></div>
+                <div class="absolute top-0 right-0 w-[500px] h-[500px] bg-teal-200/40 dark:bg-teal-800/20 rounded-full mix-blend-multiply filter blur-3xl opacity-50 translate-x-1/3 -translate-y-1/4"></div>
+                <div class="absolute bottom-0 left-0 w-[600px] h-[600px] bg-emerald-200/40 dark:bg-emerald-800/20 rounded-full mix-blend-multiply filter blur-3xl opacity-50 -translate-x-1/3 translate-y-1/4"></div>
+            </div>
 
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+                <div class="grid lg:grid-cols-2 gap-12 items-center">
+                    <div>
+                        <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-teal-100 dark:bg-teal-900/40 text-teal-800 dark:text-teal-300 font-medium text-sm mb-6 border border-teal-200 dark:border-teal-800 transition-colors">
+                            <i data-lucide="shield-check" class="w-4 h-4"></i>
+                            <span>Inovasi Fintech Syariah 2026</span>
+                        </div>
+                        <h1 class="text-5xl lg:text-6xl font-extrabold text-slate-900 dark:text-white leading-tight mb-6 transition-colors">
+                            Investasi Syariah <span class="text-transparent bg-clip-text bg-gradient-to-r from-teal-600 to-emerald-500 dark:from-teal-400 dark:to-emerald-400">Aman & Terverifikasi</span>
+                        </h1>
+                        <p class="text-lg text-slate-600 dark:text-slate-300 mb-8 leading-relaxed transition-colors">
+                            Platform Web GeoFintech Cerdas berbasis Geotagging untuk memvalidasi lokasi fisik usaha dan mencegah investasi fiktif. Tingkatkan keamanan dan transparansi investasi syariah Anda.
+                        </p>
+                        <div class="flex flex-col sm:flex-row gap-4">
+                            <a href="#" onclick="navigate('tentang', event)" class="inline-flex items-center justify-center gap-2 bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-700 hover:to-emerald-700 text-white px-8 py-4 rounded-full font-bold text-lg transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-1">
+                                Pelajari LOKASYA
+                                <i data-lucide="chevron-right" class="w-5 h-5"></i>
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <!-- Hero Illustration/Mockup -->
+                    <div class="relative mx-auto w-full max-w-md lg:max-w-full">
+                        <div class="bg-white dark:bg-slate-900 p-2 rounded-2xl shadow-2xl border border-slate-100 dark:border-slate-700 transform rotate-2 hover:rotate-0 transition-all duration-500">
+                            <div class="bg-slate-50 dark:bg-slate-800 rounded-xl overflow-hidden border border-slate-100 dark:border-slate-700 transition-colors">
+                                <div class="h-10 bg-slate-100 dark:bg-slate-800/80 flex items-center px-4 gap-2 border-b border-slate-200 dark:border-slate-700 transition-colors">
+                                    <div class="w-3 h-3 rounded-full bg-red-400"></div>
+                                    <div class="w-3 h-3 rounded-full bg-amber-400"></div>
+                                    <div class="w-3 h-3 rounded-full bg-green-400"></div>
+                                </div>
+                                <div class="p-6">
+                                    <div class="flex justify-between items-center mb-6">
+                                        <div>
+                                            <h3 class="font-bold text-slate-800 dark:text-slate-100">Dashboard Keamanan</h3>
+                                            <p class="text-xs text-slate-500 dark:text-slate-400">Real-time monitoring</p>
+                                        </div>
+                                        <span class="bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-400 text-xs font-bold px-3 py-1 rounded-full">Aman</span>
+                                    </div>
+                                    
+                                    <!-- Map Illustration -->
+                                    <div class="w-full h-48 bg-teal-50 dark:bg-teal-900/20 rounded-lg border border-teal-100 dark:border-teal-800 mb-4 relative overflow-hidden flex items-center justify-center transition-colors">
+                                        <i data-lucide="map" class="absolute w-full h-full text-teal-100/50 dark:text-teal-800/30 scale-150"></i>
+                                        <div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10"></div>
+                                        <div class="absolute top-12 left-16 flex flex-col items-center animate-bounce">
+                                            <div class="bg-emerald-500 p-1.5 rounded-full text-white shadow-lg"><i data-lucide="map-pin" class="w-4 h-4"></i></div>
+                                            <div class="bg-white dark:bg-slate-700 dark:text-slate-100 text-[10px] font-bold px-2 py-0.5 rounded shadow mt-1">PT Agro Syariah</div>
+                                        </div>
+                                        <div class="absolute bottom-10 right-20 flex flex-col items-center">
+                                            <div class="bg-emerald-500 p-1.5 rounded-full text-white shadow-lg"><i data-lucide="map-pin" class="w-4 h-4"></i></div>
+                                            <div class="bg-white dark:bg-slate-700 dark:text-slate-100 text-[10px] font-bold px-2 py-0.5 rounded shadow mt-1">Properti Halal</div>
+                                        </div>
+                                    </div>
 
-// --- Komponen Utama (App) ---
+                                    <div class="space-y-3">
+                                        <div class="flex items-center gap-3 p-3 bg-white dark:bg-slate-800 rounded-lg border border-slate-100 dark:border-slate-700 shadow-sm transition-colors">
+                                            <div class="bg-blue-100 dark:bg-blue-900/40 p-2 rounded-lg text-blue-600 dark:text-blue-400"><i data-lucide="shield-check" class="w-4 h-4"></i></div>
+                                            <div class="flex-1">
+                                                <div class="text-sm font-bold text-slate-800 dark:text-slate-100">Legalitas Tervalidasi</div>
+                                                <div class="text-xs text-slate-500 dark:text-slate-400">OJK & DSN-MUI</div>
+                                            </div>
+                                        </div>
+                                        <div class="flex items-center gap-3 p-3 bg-white dark:bg-slate-800 rounded-lg border border-slate-100 dark:border-slate-700 shadow-sm transition-colors">
+                                            <div class="bg-purple-100 dark:bg-purple-900/40 p-2 rounded-lg text-purple-600 dark:text-purple-400"><i data-lucide="brain-circuit" class="w-4 h-4"></i></div>
+                                            <div class="flex-1">
+                                                <div class="text-sm font-bold text-slate-800 dark:text-slate-100">AI Risk Status</div>
+                                                <div class="text-xs text-emerald-500 dark:text-emerald-400 font-medium">Low Risk (98% Aman)</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
 
-export default function App() {
-  const [currentPage, setCurrentPage] = useState('home');
-  const [selectedFeature, setSelectedFeature] = useState(null);
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
+        <!-- FITUR UTAMA -->
+        <section class="py-24 bg-white dark:bg-slate-950 border-t border-slate-100 dark:border-slate-800 transition-colors duration-300">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center max-w-3xl mx-auto mb-16">
+                    <span class="text-teal-600 dark:text-teal-400 font-bold tracking-wider uppercase text-sm transition-colors">Teknologi Inti LOKASYA</span>
+                    <h2 class="text-3xl md:text-4xl font-bold text-slate-900 dark:text-white mt-2 mb-4 transition-colors">6 Komponen Utama Sistem</h2>
+                    <p class="text-slate-600 dark:text-slate-300 text-lg transition-colors">Pilih dan klik kotak fitur di bawah ini untuk mempelajari lebih detail tentang teknologi yang kami gunakan.</p>
+                </div>
 
-  // Scroll to top setiap kali ganti halaman
-  useEffect(() => {
-    window.scrollTo(0, 0);
-  }, [currentPage]);
+                <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    
+                    <!-- Fitur 1 -->
+                    <a href="web_geofintech_platform.html" class="block text-left bg-slate-50 dark:bg-slate-900 p-8 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 hover:shadow-xl dark:hover:shadow-slate-900/50 hover:-translate-y-2 transition-all duration-300 group relative overflow-hidden">
+                        <div class="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-transparent to-slate-200/50 dark:to-slate-800/50 rounded-bl-full -z-10 group-hover:scale-125 transition-transform duration-500"></div>
+                        <div class="w-16 h-16 rounded-2xl flex items-center justify-center mb-6 transition-transform duration-500 group-hover:scale-110 group-hover:rotate-3 bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400">
+                            <i data-lucide="globe" class="w-8 h-8"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-slate-800 dark:text-slate-100 mb-3 group-hover:text-teal-700 dark:group-hover:text-teal-400 transition-colors">Web GeoFintech Platform</h3>
+                        <p class="text-slate-600 dark:text-slate-400 text-sm leading-relaxed mb-6">Media akses utama pengguna untuk registrasi, memantau portofolio, dan mengakses data perusahaan secara real-time.</p>
+                        <div class="flex items-center text-teal-600 dark:text-teal-400 font-bold text-sm opacity-0 group-hover:opacity-100 transform -translate-x-4 group-hover:translate-x-0 transition-all duration-300">
+                            Lihat Detail <i data-lucide="chevron-right" class="w-4 h-4 ml-1"></i>
+                        </div>
+                    </a>
 
-  const navigateTo = (page) => {
-    setCurrentPage(page);
-    setIsMenuOpen(false);
-  };
+                    <!-- Fitur 2 -->
+                    <a href="geotagging_system.html" class="block text-left bg-slate-50 dark:bg-slate-900 p-8 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 hover:shadow-xl dark:hover:shadow-slate-900/50 hover:-translate-y-2 transition-all duration-300 group relative overflow-hidden">
+                        <div class="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-transparent to-slate-200/50 dark:to-slate-800/50 rounded-bl-full -z-10 group-hover:scale-125 transition-transform duration-500"></div>
+                        <div class="w-16 h-16 rounded-2xl flex items-center justify-center mb-6 transition-transform duration-500 group-hover:scale-110 group-hover:rotate-3 bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400">
+                            <i data-lucide="map-pin" class="w-8 h-8"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-slate-800 dark:text-slate-100 mb-3 group-hover:text-teal-700 dark:group-hover:text-teal-400 transition-colors">Geotagging System</h3>
+                        <p class="text-slate-600 dark:text-slate-400 text-sm leading-relaxed mb-6">Validasi lokasi operasional menggunakan koordinat GPS. Memastikan keberadaan fisik usaha untuk cegah investasi fiktif.</p>
+                        <div class="flex items-center text-teal-600 dark:text-teal-400 font-bold text-sm opacity-0 group-hover:opacity-100 transform -translate-x-4 group-hover:translate-x-0 transition-all duration-300">
+                            Lihat Detail <i data-lucide="chevron-right" class="w-4 h-4 ml-1"></i>
+                        </div>
+                    </a>
 
-  const handleSelectFeature = (feature) => {
-    setSelectedFeature(feature);
-    navigateTo('feature-detail');
-  };
+                    <!-- Fitur 3 -->
+                    <a href="cloud_database.html" class="block text-left bg-slate-50 dark:bg-slate-900 p-8 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 hover:shadow-xl dark:hover:shadow-slate-900/50 hover:-translate-y-2 transition-all duration-300 group relative overflow-hidden">
+                        <div class="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-transparent to-slate-200/50 dark:to-slate-800/50 rounded-bl-full -z-10 group-hover:scale-125 transition-transform duration-500"></div>
+                        <div class="w-16 h-16 rounded-2xl flex items-center justify-center mb-6 transition-transform duration-500 group-hover:scale-110 group-hover:rotate-3 bg-purple-100 dark:bg-purple-900/40 text-purple-600 dark:text-purple-400">
+                            <i data-lucide="database" class="w-8 h-8"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-slate-800 dark:text-slate-100 mb-3 group-hover:text-teal-700 dark:group-hover:text-teal-400 transition-colors">Cloud Database</h3>
+                        <p class="text-slate-600 dark:text-slate-400 text-sm leading-relaxed mb-6">Pusat penyimpanan aman untuk data legalitas, riwayat transaksi, dan aktivitas sistem yang dapat diakses dengan cepat.</p>
+                        <div class="flex items-center text-teal-600 dark:text-teal-400 font-bold text-sm opacity-0 group-hover:opacity-100 transform -translate-x-4 group-hover:translate-x-0 transition-all duration-300">
+                            Lihat Detail <i data-lucide="chevron-right" class="w-4 h-4 ml-1"></i>
+                        </div>
+                    </a>
 
-  // Menu "Fitur" dihilangkan karena sudah dipindah ke Home
-  const navLinks = [
-    { id: 'home', label: 'Beranda' },
-    { id: 'masalah', label: 'Masalah' },
-    { id: 'tentang', label: 'Tentang' },
-    { id: 'cara-kerja', label: 'Cara Kerja' },
-    { id: 'tim', label: 'Tim' },
-  ];
+                    <!-- Fitur 4 -->
+                    <a href="smart_risk_detection_ai.html" class="block text-left bg-slate-50 dark:bg-slate-900 p-8 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 hover:shadow-xl dark:hover:shadow-slate-900/50 hover:-translate-y-2 transition-all duration-300 group relative overflow-hidden">
+                        <div class="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-transparent to-slate-200/50 dark:to-slate-800/50 rounded-bl-full -z-10 group-hover:scale-125 transition-transform duration-500"></div>
+                        <div class="w-16 h-16 rounded-2xl flex items-center justify-center mb-6 transition-transform duration-500 group-hover:scale-110 group-hover:rotate-3 bg-rose-100 dark:bg-rose-900/40 text-rose-600 dark:text-rose-400">
+                            <i data-lucide="brain-circuit" class="w-8 h-8"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-slate-800 dark:text-slate-100 mb-3 group-hover:text-teal-700 dark:group-hover:text-teal-400 transition-colors">Smart Risk Detection (AI)</h3>
+                        <p class="text-slate-600 dark:text-slate-400 text-sm leading-relaxed mb-6">Kecerdasan buatan untuk menganalisis pola transaksi dan mendeteksi indikasi fraud atau investasi ilegal secara otomatis.</p>
+                        <div class="flex items-center text-teal-600 dark:text-teal-400 font-bold text-sm opacity-0 group-hover:opacity-100 transform -translate-x-4 group-hover:translate-x-0 transition-all duration-300">
+                            Lihat Detail <i data-lucide="chevron-right" class="w-4 h-4 ml-1"></i>
+                        </div>
+                    </a>
 
-  const renderPage = () => {
-    switch (currentPage) {
-      case 'home': return <Home navigateTo={navigateTo} onSelectFeature={handleSelectFeature} />;
-      case 'feature-detail': return <FeatureDetail feature={selectedFeature} navigateTo={navigateTo} />;
-      case 'masalah': return <Masalah />;
-      case 'tentang': return <Tentang />;
-      case 'cara-kerja': return <CaraKerja />;
-      case 'tim': return <Tim />;
-      default: return <Home navigateTo={navigateTo} onSelectFeature={handleSelectFeature} />;
-    }
-  };
+                    <!-- Fitur 5 -->
+                    <a href="interactive_digital_map.html" class="block text-left bg-slate-50 dark:bg-slate-900 p-8 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 hover:shadow-xl dark:hover:shadow-slate-900/50 hover:-translate-y-2 transition-all duration-300 group relative overflow-hidden">
+                        <div class="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-transparent to-slate-200/50 dark:to-slate-800/50 rounded-bl-full -z-10 group-hover:scale-125 transition-transform duration-500"></div>
+                        <div class="w-16 h-16 rounded-2xl flex items-center justify-center mb-6 transition-transform duration-500 group-hover:scale-110 group-hover:rotate-3 bg-amber-100 dark:bg-amber-900/40 text-amber-600 dark:text-amber-400">
+                            <i data-lucide="map" class="w-8 h-8"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-slate-800 dark:text-slate-100 mb-3 group-hover:text-teal-700 dark:group-hover:text-teal-400 transition-colors">Interactive Digital Map</h3>
+                        <p class="text-slate-600 dark:text-slate-400 text-sm leading-relaxed mb-6">Visualisasi peta interaktif yang menampilkan persebaran lokasi perusahaan investasi syariah yang legal.</p>
+                        <div class="flex items-center text-teal-600 dark:text-teal-400 font-bold text-sm opacity-0 group-hover:opacity-100 transform -translate-x-4 group-hover:translate-x-0 transition-all duration-300">
+                            Lihat Detail <i data-lucide="chevron-right" class="w-4 h-4 ml-1"></i>
+                        </div>
+                    </a>
 
-  return (
-    <div className="flex flex-col min-h-screen bg-slate-50 font-sans text-slate-800">
-      
-      {/* Navigation */}
-      <nav className="fixed w-full z-50 bg-white/90 backdrop-blur-md shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-20">
-            <button onClick={() => navigateTo('home')} className="flex items-center gap-2 group outline-none">
-              <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center text-white shadow-lg transform group-hover:scale-105 transition-transform">
-                <MapPin size={24} />
-              </div>
-              <span className="font-bold text-2xl tracking-tight text-teal-900">LOKASYA</span>
-            </button>
+                    <!-- Fitur 6 -->
+                    <a href="security_&_encryption.html" class="block text-left bg-slate-50 dark:bg-slate-900 p-8 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 hover:shadow-xl dark:hover:shadow-slate-900/50 hover:-translate-y-2 transition-all duration-300 group relative overflow-hidden">
+                        <div class="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-transparent to-slate-200/50 dark:to-slate-800/50 rounded-bl-full -z-10 group-hover:scale-125 transition-transform duration-500"></div>
+                        <div class="w-16 h-16 rounded-2xl flex items-center justify-center mb-6 transition-transform duration-500 group-hover:scale-110 group-hover:rotate-3 bg-slate-200 dark:bg-slate-700/50 text-slate-700 dark:text-slate-300">
+                            <i data-lucide="lock" class="w-8 h-8"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-slate-800 dark:text-slate-100 mb-3 group-hover:text-teal-700 dark:group-hover:text-teal-400 transition-colors">Security & Encryption</h3>
+                        <p class="text-slate-600 dark:text-slate-400 text-sm leading-relaxed mb-6">Sistem enkripsi tingkat tinggi untuk melindungi data pribadi dan aktivitas transaksi pengguna dari kebocoran cyber.</p>
+                        <div class="flex items-center text-teal-600 dark:text-teal-400 font-bold text-sm opacity-0 group-hover:opacity-100 transform -translate-x-4 group-hover:translate-x-0 transition-all duration-300">
+                            Lihat Detail <i data-lucide="chevron-right" class="w-4 h-4 ml-1"></i>
+                        </div>
+                    </a>
+
+                </div>
+            </div>
+        </section>
+        
+        </div> <!-- End of Beranda Section -->
+
+        <!-- Masalah Section -->
+        <section id="masalah" class="page-section hidden pt-32 pb-20 bg-slate-50 dark:bg-slate-900 min-h-screen transition-colors duration-300">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center max-w-3xl mx-auto mb-16">
+                    <h2 class="text-3xl md:text-4xl font-bold text-slate-900 dark:text-white mb-4 transition-colors">Mengapa LOKASYA Hadir?</h2>
+                    <p class="text-lg text-slate-600 dark:text-slate-300 leading-relaxed transition-colors">
+                        Warren Buffett pernah berkata, <span class="italic font-medium">"Risk comes from not knowing what you are doing."</span> Di era digital, kurangnya transparansi menjadi ancaman nyata.
+                    </p>
+                </div>
+
+                <div class="grid md:grid-cols-3 gap-8">
+                    <div class="bg-white dark:bg-slate-800 rounded-2xl p-8 border border-slate-100 dark:border-slate-700 hover:shadow-lg dark:hover:shadow-slate-950/50 transition-all duration-300">
+                        <div class="w-14 h-14 bg-red-100 dark:bg-red-900/40 rounded-xl flex items-center justify-center text-red-600 dark:text-red-400 mb-6 transition-colors">
+                            <i data-lucide="alert-triangle" class="w-7 h-7"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-slate-800 dark:text-slate-100 mb-3 transition-colors">Maraknya Investasi Bodong</h3>
+                        <p class="text-slate-600 dark:text-slate-400 text-sm leading-relaxed transition-colors">Kemudahan akses digital sering dimanfaatkan untuk skema investasi fiktif berkedok syariah yang telah merugikan masyarakat triliunan rupiah.</p>
+                    </div>
+                    
+                    <div class="bg-white dark:bg-slate-800 rounded-2xl p-8 border border-slate-100 dark:border-slate-700 hover:shadow-lg dark:hover:shadow-slate-950/50 transition-all duration-300">
+                        <div class="w-14 h-14 bg-orange-100 dark:bg-orange-900/40 rounded-xl flex items-center justify-center text-orange-600 dark:text-orange-400 mb-6 transition-colors">
+                            <i data-lucide="map" class="w-7 h-7"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-slate-800 dark:text-slate-100 mb-3 transition-colors">Lokasi Usaha Fiktif</h3>
+                        <p class="text-slate-600 dark:text-slate-400 text-sm leading-relaxed transition-colors">Banyak platform ilegal menawarkan return tinggi tanpa transparansi data perusahaan dan kejelasan lokasi usaha fisik yang nyata.</p>
+                    </div>
+
+                    <div class="bg-white dark:bg-slate-800 rounded-2xl p-8 border border-slate-100 dark:border-slate-700 hover:shadow-lg dark:hover:shadow-slate-950/50 transition-all duration-300">
+                        <div class="w-14 h-14 bg-blue-100 dark:bg-blue-900/40 rounded-xl flex items-center justify-center text-blue-600 dark:text-blue-400 mb-6 transition-colors">
+                            <i data-lucide="trending-up" class="w-7 h-7"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-slate-800 dark:text-slate-100 mb-3 transition-colors">Rendahnya Literasi Digital</h3>
+                        <p class="text-slate-600 dark:text-slate-400 text-sm leading-relaxed transition-colors">Masyarakat masih kesulitan membedakan platform legal dan ilegal karena minimnya sistem verifikasi yang transparan dan mudah dipahami.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Tentang Section -->
+        <section id="tentang" class="page-section hidden pt-32 pb-20 bg-gradient-to-br from-teal-900 to-slate-900 text-white relative overflow-hidden min-h-screen">
+            <!-- Grid Background SVG -->
+            <div class="absolute top-0 left-0 w-full h-full overflow-hidden opacity-10">
+                <svg class="absolute left-0 top-0 h-full w-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+                    <path d="M0,0 L100,0 L100,100 L0,100 Z" fill="url(#grid)"></path>
+                    <defs>
+                        <pattern id="grid" width="8" height="8" patternUnits="userSpaceOnUse">
+                            <path d="M 8 0 L 0 0 0 8" fill="none" stroke="white" stroke-width="0.5"></path>
+                        </pattern>
+                    </defs>
+                </svg>
+            </div>
             
-            {/* Desktop Menu */}
-            <div className="hidden md:flex items-center space-x-6 lg:space-x-8">
-              {navLinks.map((link) => (
-                <button 
-                  key={link.id}
-                  onClick={() => navigateTo(link.id)} 
-                  className={`font-medium transition-colors ${
-                    currentPage === link.id || (currentPage === 'feature-detail' && link.id === 'home')
-                      ? 'text-teal-600 border-b-2 border-teal-600 pb-1' 
-                      : 'text-slate-600 hover:text-teal-600'
-                  }`}
-                >
-                  {link.label}
-                </button>
-              ))}
-              <button className="bg-teal-600 hover:bg-teal-700 text-white px-6 py-2.5 rounded-full font-semibold transition-all shadow-md hover:shadow-lg transform hover:-translate-y-0.5 ml-4">
-                Coba Demo
-              </button>
-            </div>
-
-            {/* Mobile Menu Button */}
-            <div className="md:hidden flex items-center">
-              <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="text-slate-600 outline-none">
-                {isMenuOpen ? <X size={28} /> : <Menu size={28} />}
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* Mobile Menu */}
-        {isMenuOpen && (
-          <div className="md:hidden bg-white border-t border-slate-100 p-4 shadow-lg absolute w-full animate-in slide-in-from-top-2 duration-200">
-            <div className="flex flex-col space-y-2">
-              {navLinks.map((link) => (
-                <button 
-                  key={link.id}
-                  onClick={() => navigateTo(link.id)} 
-                  className={`text-left font-medium p-3 rounded-lg ${
-                    currentPage === link.id 
-                      ? 'bg-teal-50 text-teal-700' 
-                      : 'text-slate-600 hover:bg-slate-50'
-                  }`}
-                >
-                  {link.label}
-                </button>
-              ))}
-              <button className="bg-teal-600 text-white px-4 py-3 rounded-lg font-medium w-full mt-4 shadow-sm">
-                Coba Demo
-              </button>
-            </div>
-          </div>
-        )}
-      </nav>
-
-      {/* Main Content Area */}
-      <main className="flex-grow">
-        {renderPage()}
-      </main>
-
-      {/* Footer (Ditampilkan di semua halaman) */}
-      <footer className="bg-slate-900 text-slate-300">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-          
-          {currentPage !== 'home' && (
-            <div className="bg-gradient-to-r from-teal-800 to-emerald-900 rounded-3xl p-10 lg:p-12 mb-16 text-center relative overflow-hidden">
-              <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10"></div>
-              <h2 className="text-2xl md:text-3xl font-bold text-white mb-4 relative z-10">Siap Berinvestasi Syariah dengan Aman?</h2>
-              <p className="text-teal-100 mb-6 max-w-2xl mx-auto relative z-10">Bergabunglah dengan ekosistem Web GeoFintech LOKASYA.</p>
-              <button className="bg-white text-teal-800 hover:bg-slate-100 px-8 py-3 rounded-full font-bold transition-all shadow-lg relative z-10">
-                Daftar Sekarang
-              </button>
-            </div>
-          )}
-
-          <div className="grid md:grid-cols-4 gap-8 mb-8 border-b border-slate-800 pb-12">
-            <div className="col-span-2">
-              <div className="flex items-center gap-2 mb-4">
-                <div className="w-8 h-8 bg-teal-500 rounded-lg flex items-center justify-center text-white">
-                  <MapPin size={18} />
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+                <div class="grid lg:grid-cols-2 gap-16 items-center">
+                    <div>
+                        <h2 class="text-3xl md:text-4xl font-bold mb-6 leading-tight">Mengenal LOKASYA</h2>
+                        <p class="text-teal-100 text-lg mb-6 leading-relaxed">
+                            <strong class="text-white">LOKASYA</strong> (Lokasi & Syariah) adalah inovasi Web GeoFintech berbasis geotagging yang dirancang untuk merevolusi keamanan investasi syariah digital di Indonesia.
+                        </p>
+                        <p class="text-teal-100/80 mb-8 leading-relaxed">
+                            Kami mengintegrasikan teknologi financial technology (fintech), data geospasial, dan kecerdasan buatan (AI) untuk membantu masyarakat mengidentifikasi platform investasi syariah yang legal, nyata secara fisik, dan terpercaya.
+                        </p>
+                        
+                        <ul class="space-y-4">
+                            <li class="flex items-center gap-3 text-teal-50">
+                                <div class="bg-teal-500/20 p-1 rounded-full text-teal-400"><i data-lucide="shield-check" class="w-5 h-5"></i></div>
+                                Validasi lokasi usaha secara real-time
+                            </li>
+                            <li class="flex items-center gap-3 text-teal-50">
+                                <div class="bg-teal-500/20 p-1 rounded-full text-teal-400"><i data-lucide="shield-check" class="w-5 h-5"></i></div>
+                                Transparansi data perusahaan
+                            </li>
+                            <li class="flex items-center gap-3 text-teal-50">
+                                <div class="bg-teal-500/20 p-1 rounded-full text-teal-400"><i data-lucide="shield-check" class="w-5 h-5"></i></div>
+                                Mencegah praktik investasi fiktif (Gharar)
+                            </li>
+                        </ul>
+                    </div>
+                    
+                    <div class="relative">
+                        <div class="absolute inset-0 bg-gradient-to-r from-teal-500 to-emerald-500 blur-3xl opacity-30 rounded-full"></div>
+                        <div class="bg-slate-800/50 backdrop-blur-xl border border-slate-700 p-8 rounded-3xl relative">
+                            <div class="text-center mb-8">
+                                <h3 class="text-2xl font-bold text-white mb-2">Perbandingan Sistem</h3>
+                                <p class="text-slate-400 text-sm">Fintech Konvensional vs LOKASYA GeoFintech</p>
+                            </div>
+                            
+                            <div class="space-y-6">
+                                <div>
+                                    <div class="flex justify-between text-sm mb-2">
+                                        <span class="text-slate-300">Validasi Data (Fintech Biasa)</span>
+                                        <span class="text-slate-400">60%</span>
+                                    </div>
+                                    <div class="w-full bg-slate-700 rounded-full h-2">
+                                        <div class="bg-slate-500 h-2 rounded-full" style="width: 60%"></div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="flex justify-between text-sm mb-2">
+                                        <span class="text-emerald-400 font-bold">Validasi Data + Geotagging (LOKASYA)</span>
+                                        <span class="text-emerald-400 font-bold">99%</span>
+                                    </div>
+                                    <div class="w-full bg-slate-700 rounded-full h-2">
+                                        <div class="bg-gradient-to-r from-teal-400 to-emerald-400 h-2 rounded-full relative" style="width: 99%">
+                                            <div class="absolute right-0 top-1/2 -translate-y-1/2 w-4 h-4 bg-white rounded-full shadow blur-[2px]"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <p class="text-xs text-slate-400 italic mt-4 text-center">Berdasarkan data penelitian Rahman & Sari (2022) & Inovasi LOKASYA.</p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <span className="font-bold text-xl text-white">LOKASYA</span>
-              </div>
-              <p className="text-sm text-slate-400 max-w-sm leading-relaxed">
-                Platform Web GeoFintech Cerdas dengan Geotagging untuk Optimalisasi Keamanan Investasi Syariah.
-              </p>
             </div>
-            <div>
-              <h4 className="text-white font-bold mb-4">Navigasi Halaman</h4>
-              <ul className="space-y-2 text-sm flex flex-col items-start">
-                {navLinks.slice(0, 4).map(link => (
-                  <button key={link.id} onClick={() => navigateTo(link.id)} className="hover:text-teal-400 transition-colors py-1">
-                    {link.label}
-                  </button>
-                ))}
-              </ul>
-            </div>
-            <div>
-              <h4 className="text-white font-bold mb-4">Kompetisi</h4>
-              <ul className="space-y-2 text-sm text-slate-400">
-                <li>SHEIF KSEI FEB UNNES 2026</li>
-                <li>Tema: Inovasi Fintech Syariah</li>
-                <li>Tim: TriRen</li>
-              </ul>
-            </div>
-          </div>
-          
-          <div className="text-center text-sm text-slate-500">
-            &copy; 2026 LOKASYA by Tim TriRen. All rights reserved.
-          </div>
-        </div>
-      </footer>
+        </section>
 
-    </div>
-  );
-}
+        <!-- Cara Kerja Section -->
+        <section id="cara-kerja" class="page-section hidden pt-32 pb-20 bg-white dark:bg-slate-950 min-h-screen transition-colors duration-300">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center mb-16">
+                    <h2 class="text-3xl md:text-4xl font-bold text-slate-900 dark:text-white mb-4 transition-colors">Mekanisme Kerja Sistem</h2>
+                    <p class="text-slate-600 dark:text-slate-300 text-lg transition-colors">Alur verifikasi yang transparan dan aman di LOKASYA.</p>
+                </div>
+
+                <div class="relative mt-20">
+                    <div class="hidden md:block absolute top-1/2 left-0 w-full h-1 bg-gradient-to-r from-teal-100 dark:from-teal-900/50 via-teal-300 dark:via-teal-700/50 to-emerald-100 dark:to-emerald-900/50 -translate-y-1/2 z-0"></div>
+                    
+                    <div class="grid md:grid-cols-4 gap-8 relative z-10">
+                        <div class="relative flex flex-col items-center text-center bg-white dark:bg-slate-900 md:bg-transparent md:dark:bg-transparent p-6 rounded-2xl md:p-0 md:rounded-none shadow-sm md:shadow-none border border-slate-100 dark:border-slate-800 md:border-none md:dark:border-none transition-colors">
+                            <div class="w-16 h-16 bg-gradient-to-br from-teal-500 to-emerald-600 rounded-full flex items-center justify-center text-white font-bold text-xl shadow-lg border-4 border-white dark:border-slate-950 mb-6 z-10 transition-colors">01</div>
+                            <h3 class="text-lg font-bold text-slate-800 dark:text-slate-100 mb-2 transition-colors">Registrasi & Legalitas</h3>
+                            <p class="text-sm text-slate-500 dark:text-slate-400 transition-colors">Perusahaan mendaftar dan mengunggah dokumen legalitas serta identitas usaha.</p>
+                        </div>
+                        <div class="relative flex flex-col items-center text-center bg-white dark:bg-slate-900 md:bg-transparent md:dark:bg-transparent p-6 rounded-2xl md:p-0 md:rounded-none shadow-sm md:shadow-none border border-slate-100 dark:border-slate-800 md:border-none md:dark:border-none transition-colors">
+                            <div class="w-16 h-16 bg-gradient-to-br from-teal-500 to-emerald-600 rounded-full flex items-center justify-center text-white font-bold text-xl shadow-lg border-4 border-white dark:border-slate-950 mb-6 z-10 transition-colors">02</div>
+                            <h3 class="text-lg font-bold text-slate-800 dark:text-slate-100 mb-2 transition-colors">Validasi Geotagging</h3>
+                            <p class="text-sm text-slate-500 dark:text-slate-400 transition-colors">Sistem memvalidasi lokasi operasional via GPS secara akurat dan real-time.</p>
+                        </div>
+                        <div class="relative flex flex-col items-center text-center bg-white dark:bg-slate-900 md:bg-transparent md:dark:bg-transparent p-6 rounded-2xl md:p-0 md:rounded-none shadow-sm md:shadow-none border border-slate-100 dark:border-slate-800 md:border-none md:dark:border-none transition-colors">
+                            <div class="w-16 h-16 bg-gradient-to-br from-teal-500 to-emerald-600 rounded-full flex items-center justify-center text-white font-bold text-xl shadow-lg border-4 border-white dark:border-slate-950 mb-6 z-10 transition-colors">03</div>
+                            <h3 class="text-lg font-bold text-slate-800 dark:text-slate-100 mb-2 transition-colors">Analisis AI & Cloud</h3>
+                            <p class="text-sm text-slate-500 dark:text-slate-400 transition-colors">Data disimpan di Cloud dan dianalisis oleh AI untuk deteksi potensi fraud.</p>
+                        </div>
+                        <div class="relative flex flex-col items-center text-center bg-white dark:bg-slate-900 md:bg-transparent md:dark:bg-transparent p-6 rounded-2xl md:p-0 md:rounded-none shadow-sm md:shadow-none border border-slate-100 dark:border-slate-800 md:border-none md:dark:border-none transition-colors">
+                            <div class="w-16 h-16 bg-gradient-to-br from-teal-500 to-emerald-600 rounded-full flex items-center justify-center text-white font-bold text-xl shadow-lg border-4 border-white dark:border-slate-950 mb-6 z-10 transition-colors">04</div>
+                            <h3 class="text-lg font-bold text-slate-800 dark:text-slate-100 mb-2 transition-colors">Dashboard Publik</h3>
+                            <p class="text-sm text-slate-500 dark:text-slate-400 transition-colors">Pengguna melihat status legalitas, lokasi, dan keamanan di dashboard interaktif.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Tim Section -->
+        <section id="tim" class="page-section hidden pt-32 pb-20 bg-slate-50 dark:bg-slate-900 min-h-screen transition-colors duration-300">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center mb-16">
+                    <span class="bg-teal-100 dark:bg-teal-900/40 text-teal-800 dark:text-teal-300 text-sm font-bold px-4 py-1.5 rounded-full mb-4 inline-block transition-colors">Tim Pengembang</span>
+                    <h2 class="text-3xl md:text-4xl font-bold text-slate-900 dark:text-white mt-4 mb-2 transition-colors">TriRen</h2>
+                    <p class="text-slate-600 dark:text-slate-400 text-lg transition-colors">Delegasi SHEIF KSEI FEB UNNES 2026</p>
+                </div>
+
+                <div class="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+                    <!-- Anggota 1 -->
+                    <div class="bg-white dark:bg-slate-800 rounded-3xl p-8 text-center border border-slate-100 dark:border-slate-700 shadow-sm hover:shadow-xl dark:hover:shadow-slate-950/50 transition-all duration-300">
+                        <div class="w-24 h-24 bg-gradient-to-br from-emerald-100 to-teal-100 dark:from-emerald-900/40 dark:to-teal-900/40 rounded-full mx-auto mb-6 flex items-center justify-center transition-colors">
+                            <span class="text-3xl font-bold text-teal-600 dark:text-teal-400">NZ</span>
+                        </div>
+                        <h3 class="text-xl font-bold text-slate-800 dark:text-slate-100 mb-1 transition-colors">Nabilla Zhulva Santoso</h3>
+                        <p class="text-teal-600 dark:text-teal-400 font-medium text-sm mb-4 transition-colors">Anggota 1</p>
+                        <div class="w-full h-px bg-slate-100 dark:bg-slate-700 mb-4 transition-colors"></div>
+                        <p class="text-slate-500 dark:text-slate-400 text-sm transition-colors">Instansi: Universitas Malang</p>
+                    </div>
+
+                    <!-- Ketua Tim -->
+                    <div class="bg-white dark:bg-slate-800 rounded-3xl p-8 text-center border border-teal-200 dark:border-teal-700/50 shadow-md hover:shadow-xl dark:hover:shadow-slate-950/50 transition-all duration-300 md:-translate-y-4 relative">
+                        <div class="absolute -top-3 inset-x-0 flex justify-center">
+                            <span class="bg-teal-600 dark:bg-teal-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-sm">Ketua Tim</span>
+                        </div>
+                        <div class="w-24 h-24 bg-gradient-to-br from-teal-500 to-emerald-600 rounded-full mx-auto mb-6 mt-2 flex items-center justify-center text-white shadow-lg">
+                            <span class="text-3xl font-bold">AR</span>
+                        </div>
+                        <h3 class="text-xl font-bold text-slate-800 dark:text-slate-100 mb-1 transition-colors">Aulia Rahma Hanum</h3>
+                        <p class="text-teal-700 dark:text-teal-300 font-bold text-sm mb-4 transition-colors">Ketua Tim</p>
+                        <div class="w-full h-px bg-slate-100 dark:bg-slate-700 mb-4 transition-colors"></div>
+                        <p class="text-slate-500 dark:text-slate-400 text-sm transition-colors">Instansi: Universitas Malang</p>
+                    </div>
+
+                    <!-- Anggota 2 -->
+                    <div class="bg-white dark:bg-slate-800 rounded-3xl p-8 text-center border border-slate-100 dark:border-slate-700 shadow-sm hover:shadow-xl dark:hover:shadow-slate-950/50 transition-all duration-300">
+                        <div class="w-24 h-24 bg-gradient-to-br from-emerald-100 to-teal-100 dark:from-emerald-900/40 dark:to-teal-900/40 rounded-full mx-auto mb-6 flex items-center justify-center transition-colors">
+                            <span class="text-3xl font-bold text-teal-600 dark:text-teal-400">FR</span>
+                        </div>
+                        <h3 class="text-xl font-bold text-slate-800 dark:text-slate-100 mb-1 transition-colors">Fadhly Ramadhan Arieyanto</h3>
+                        <p class="text-teal-600 dark:text-teal-400 font-medium text-sm mb-4 transition-colors">Anggota 2</p>
+                        <div class="w-full h-px bg-slate-100 dark:bg-slate-700 mb-4 transition-colors"></div>
+                        <p class="text-slate-500 dark:text-slate-400 text-sm transition-colors">Instansi: Universitas Terbuka</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-slate-900 text-slate-300">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+            <div class="grid md:grid-cols-4 gap-8 mb-8 border-b border-slate-800 pb-12">
+                <div class="col-span-2">
+                    <div class="flex items-center gap-2 mb-4">
+                        <div class="w-8 h-8 bg-teal-500 rounded-lg flex items-center justify-center text-white">
+                            <i data-lucide="map-pin" class="w-4 h-4"></i>
+                        </div>
+                        <span class="font-bold text-xl text-white">LOKASYA</span>
+                    </div>
+                    <p class="text-sm text-slate-400 max-w-sm leading-relaxed">
+                        Platform Web GeoFintech Cerdas dengan Geotagging untuk Optimalisasi Keamanan Investasi Syariah.
+                    </p>
+                </div>
+                <div>
+                    <h4 class="text-white font-bold mb-4">Navigasi Halaman</h4>
+                    <ul class="space-y-2 text-sm flex flex-col items-start">
+                        <a href="#" onclick="navigate('beranda', event)" class="hover:text-teal-400 transition-colors py-1">Beranda</a>
+                        <a href="#" onclick="navigate('masalah', event)" class="hover:text-teal-400 transition-colors py-1">Masalah</a>
+                        <a href="#" onclick="navigate('tentang', event)" class="hover:text-teal-400 transition-colors py-1">Tentang Kami</a>
+                        <a href="#" onclick="navigate('cara-kerja', event)" class="hover:text-teal-400 transition-colors py-1">Cara Kerja</a>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-white font-bold mb-4">Kompetisi</h4>
+                    <ul class="space-y-2 text-sm text-slate-400">
+                        <li>SHEIF KSEI FEB UNNES 2026</li>
+                        <li>Tema: Inovasi Fintech Syariah</li>
+                        <li>Tim: TriRen</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="text-center text-sm text-slate-500">
+                &copy; 2026 LOKASYA by Tim TriRen. All rights reserved.
+            </div>
+        </div>
+    </footer>
+
+    <!-- Script Utama (Inisialisasi Ikon & Toggle Menu) -->
+    <script>
+        // Inisialisasi ikon Lucide
+        lucide.createIcons();
+
+        // Script Toggle Menu Mobile
+        const btn = document.getElementById('mobile-menu-btn');
+        const menu = document.getElementById('mobile-menu');
+        const icon = document.getElementById('menu-icon');
+
+        let isMenuOpen = false;
+
+        function toggleMenu() {
+            isMenuOpen = !isMenuOpen;
+            if(isMenuOpen) {
+                menu.classList.remove('hidden');
+                // Mengubah icon menu menjadi 'X'
+                icon.setAttribute('data-lucide', 'x');
+                lucide.createIcons();
+            } else {
+                menu.classList.add('hidden');
+                // Mengubah icon kembali menjadi menu
+                icon.setAttribute('data-lucide', 'menu');
+                lucide.createIcons();
+            }
+        }
+
+        btn.addEventListener('click', toggleMenu);
+
+        // Script Navigasi Antar Halaman SPA (Single Page Application)
+        function navigate(pageId, event) {
+            if (event) event.preventDefault();
+
+            // 1. Sembunyikan semua section konten
+            document.querySelectorAll('.page-section').forEach(el => {
+                el.classList.add('hidden');
+                el.classList.remove('block', 'animate-in');
+            });
+
+            // 2. Tampilkan section yang dituju
+            const target = document.getElementById(pageId);
+            if(target) {
+                target.classList.remove('hidden');
+                target.classList.add('block');
+                
+                // Trigger reflow untuk memainkan ulang animasi CSS (fade in)
+                void target.offsetWidth;
+                target.classList.add('animate-in');
+            }
+
+            // 3. Update status aktif (warna) di Menu Desktop dengan kelas dark mode
+            document.querySelectorAll('.nav-desktop-link').forEach(link => {
+                if(link.dataset.page === pageId) {
+                    link.className = "nav-desktop-link font-medium transition-colors text-teal-600 dark:text-teal-400 border-b-2 border-teal-600 dark:border-teal-400 pb-1";
+                } else {
+                    link.className = "nav-desktop-link font-medium text-slate-600 dark:text-slate-300 hover:text-teal-600 dark:hover:text-teal-400 transition-colors";
+                }
+            });
+
+            // 4. Update status aktif (warna) di Menu Mobile dengan kelas dark mode
+            document.querySelectorAll('.nav-mobile-link').forEach(link => {
+                if(link.dataset.page === pageId) {
+                    link.className = "nav-mobile-link block text-left font-medium p-3 rounded-lg bg-teal-50 dark:bg-teal-900/50 text-teal-700 dark:text-teal-300";
+                } else {
+                    link.className = "nav-mobile-link block text-left font-medium p-3 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800";
+                }
+            });
+
+            // 5. Tutup menu mobile jika sedang dalam keadaan terbuka
+            if (isMenuOpen) toggleMenu();
+
+            // 6. Gulir otomatis layar ke atas
+            window.scrollTo(0, 0);
+        }
+    </script>
+</body>
+</html>
