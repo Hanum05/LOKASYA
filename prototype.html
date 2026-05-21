@@ -139,10 +139,11 @@
 
         <!-- User Profile (Bottom Sidebar) -->
         <div class="p-4 border-t border-slate-100 dark:border-slate-800">
-            <a href="index.html" class="flex items-center p-2 text-slate-600 dark:text-slate-400 hover:text-rose-500 dark:hover:text-rose-400 rounded-xl group transition-colors">
+            <!-- Diubah menggunakan onclick="window.location.href='index.html'" untuk keandalan navigasi di iframe -->
+            <button onclick="window.location.href='index.html'" class="w-full flex items-center p-2 text-slate-600 dark:text-slate-400 hover:text-rose-500 dark:hover:text-rose-400 rounded-xl group transition-colors text-left focus:outline-none">
                 <i data-lucide="log-out" class="w-5 h-5 shrink-0"></i>
                 <span class="ml-3 font-medium">Keluar Demo</span>
-            </a>
+            </button>
         </div>
     </aside>
 
@@ -443,15 +444,41 @@
                                 </div>
                             </div>
                         </div>
+
+                        <!-- Card Daftar Catatan Lokasi (List Pin yang Ditandai) -->
+                        <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col relative shrink-0 h-48">
+                            <div class="p-3 border-b border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50 shrink-0">
+                                <h3 class="font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2 text-sm">
+                                    <i data-lucide="bookmark" class="w-4 h-4 text-rose-500"></i>
+                                    Catatan Lokasi Anda
+                                </h3>
+                            </div>
+                            <div id="savedNotesList" class="flex-1 overflow-y-auto custom-scrollbar p-0 divide-y divide-slate-100 dark:divide-slate-800">
+                                <!-- Default Empty State -->
+                                <div class="p-6 text-center text-slate-400">
+                                    <i data-lucide="map-pin-off" class="w-6 h-6 mx-auto mb-2 opacity-50"></i>
+                                    <p class="text-[10px]">Belum ada lokasi yang ditandai.<br>Gunakan mode menandai pada peta.</p>
+                                </div>
+                            </div>
+                        </div>
+
                     </div>
 
                     <!-- Peta Container Utama (Urutan 1 di Mobile, dengan batas tinggi dan Fullscreen mode) -->
                     <div id="exploreMapContainer" class="order-1 lg:order-2 lg:col-span-8 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden relative flex flex-col h-[400px] lg:h-full z-0 transition-all duration-300 ease-in-out">
                         
-                        <!-- Fullscreen Toggle Button -->
-                        <button onclick="toggleMapFullscreen()" class="absolute top-4 right-4 bg-white/90 dark:bg-slate-900/90 backdrop-blur border border-slate-200 dark:border-slate-700 p-2 rounded-xl shadow-md z-[400] text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors cursor-pointer" title="Layar Penuh (Fullscreen)">
-                            <i data-lucide="maximize" id="fsBtnIcon" class="w-5 h-5"></i>
-                        </button>
+                        <!-- Top Right Controls: Mode Toggle & Fullscreen -->
+                        <div class="absolute top-4 right-4 z-[400] flex gap-2">
+                            <!-- Toggle Map Mode Button for Explore Map -->
+                            <button id="toggleExploreMapModeBtn" onclick="toggleExploreMapMode()" class="bg-white/90 dark:bg-slate-900/90 backdrop-blur border border-slate-200 dark:border-slate-700 px-3 py-2 rounded-xl shadow-md text-xs font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors cursor-pointer flex items-center gap-1" title="Mode Peta">
+                                <i data-lucide="mouse-pointer-2" class="w-4 h-4"></i> <span class="hidden sm:inline">Mode Geser</span>
+                            </button>
+
+                            <!-- Fullscreen Toggle Button -->
+                            <button onclick="toggleMapFullscreen()" class="bg-white/90 dark:bg-slate-900/90 backdrop-blur border border-slate-200 dark:border-slate-700 p-2 rounded-xl shadow-md text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors cursor-pointer" title="Layar Penuh (Fullscreen)">
+                                <i data-lucide="maximize" id="fsBtnIcon" class="w-5 h-5"></i>
+                            </button>
+                        </div>
 
                         <div id="exploreMap" class="w-full flex-1 bg-slate-100 dark:bg-slate-800 relative z-0"></div>
                         
@@ -577,6 +604,7 @@
         // Variabel global untuk Explore Map (Peta Proyek Penuh)
         let exploreMap;
         let exploreMarkersGroup = [];
+        let isExploreMarkingMode = false;
         
         // Data Dummy Proyek Lengkap (untuk Peta Eksplorasi)
         const exploreProjectsData = [
@@ -649,6 +677,7 @@
 
                 const marker = L.marker([lat, lng], {icon: userIcon}).addTo(map);
                 userMarkers.push({ id: markerId, marker: marker, note: "" });
+                updateSavedNotesUI(); // Memicu pembaruan daftar list di UI
 
                 marker.bindPopup(() => {
                     const data = userMarkers.find(m => m.id === markerId);
@@ -669,6 +698,39 @@
             exploreMap = L.map('exploreMap').setView([-7.0500, 110.4200], 11);
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 18, attribution: '&copy; OpenStreetMap' }).addTo(exploreMap);
             
+            // Event Listener Geotagging untuk Explore Map
+            exploreMap.on('click', function(e) {
+                if (!isExploreMarkingMode) return; 
+
+                const lat = e.latlng.lat;
+                const lng = e.latlng.lng;
+                const markerId = Date.now();
+
+                const userIcon = L.divIcon({
+                    className: 'custom-div-icon',
+                    html: `<div class='marker-pin' style='background-color: #f43f5e; border-color: white;'></div><i data-lucide="pen-tool" class="marker-icon"></i>`,
+                    iconSize: [30, 42], iconAnchor: [15, 42], popupAnchor: [0, -35]
+                });
+
+                const marker = L.marker([lat, lng], {icon: userIcon}).addTo(exploreMap);
+                userMarkers.push({ id: markerId, marker: marker, note: "" });
+                updateSavedNotesUI(); // Memicu pembaruan daftar list di UI
+
+                marker.bindPopup(() => {
+                    const data = userMarkers.find(m => m.id === markerId);
+                    return `
+                        <div class="p-1 w-48">
+                            <h4 class="font-bold text-slate-800 text-sm mb-2">Catatan Lapangan Baru</h4>
+                            <textarea id="note_${markerId}" class="w-full text-xs p-2 border border-slate-300 rounded mb-2 focus:ring focus:ring-rose-300 outline-none custom-scrollbar" rows="3" placeholder="Tulis catatan Anda di sini...">${data.note}</textarea>
+                            <button onclick="saveUserNote(${markerId})" class="w-full bg-rose-500 text-white text-xs py-1.5 font-bold rounded hover:bg-rose-600 transition-colors">Simpan Catatan</button>
+                            <p id="status_${markerId}" class="text-[10px] text-emerald-600 mt-1 hidden text-center font-bold">Catatan Tersimpan!</p>
+                        </div>
+                    `;
+                });
+                marker.openPopup();
+                setTimeout(() => lucide.createIcons(), 100);
+            });
+
             // Render semua marker di Explore Map
             renderExploreMarkers('all');
 
@@ -808,6 +870,23 @@
             }, 350);
         }
 
+        // FUNGSI TOGGLE MODE MENANDAI DI EXPLORE MAP
+        window.toggleExploreMapMode = function() {
+            isExploreMarkingMode = !isExploreMarkingMode;
+            const btn = document.getElementById('toggleExploreMapModeBtn');
+            
+            if (isExploreMarkingMode) {
+                btn.innerHTML = `<i data-lucide="map-pin" class="w-4 h-4 text-rose-500"></i> <span class="hidden sm:inline text-rose-600 dark:text-rose-400 font-bold">Mode Menandai</span>`;
+                btn.className = "bg-rose-50 dark:bg-rose-900/40 backdrop-blur border border-rose-200 dark:border-rose-800 px-3 py-2 rounded-xl shadow-md text-xs transition-colors cursor-pointer flex items-center gap-1 animate-pulse";
+                exploreMap.getContainer().style.cursor = 'crosshair'; 
+            } else {
+                btn.innerHTML = `<i data-lucide="mouse-pointer-2" class="w-4 h-4"></i> <span class="hidden sm:inline">Mode Geser</span>`;
+                btn.className = "bg-white/90 dark:bg-slate-900/90 backdrop-blur border border-slate-200 dark:border-slate-700 px-3 py-2 rounded-xl shadow-md text-xs font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors cursor-pointer flex items-center gap-1";
+                exploreMap.getContainer().style.cursor = ''; 
+            }
+            lucide.createIcons();
+        }
+
         // ========================== FUNGSI UMUM LAINNYA ==========================
 
         function toggleMapMode() {
@@ -835,7 +914,84 @@
                 const status = document.getElementById(`status_${id}`);
                 status.classList.remove('hidden');
                 status.classList.add('animate-in');
+                updateSavedNotesUI(); // Memperbarui teks pada list setelah disimpan
                 setTimeout(() => { if (status) status.classList.add('hidden'); }, 2000);
+            }
+        };
+
+        // FUNGSI: Merender ulang daftar catatan di panel sidebar
+        window.updateSavedNotesUI = function() {
+            const listContainer = document.getElementById('savedNotesList');
+            
+            if (userMarkers.length === 0) {
+                listContainer.innerHTML = `
+                    <div class="p-6 text-center text-slate-400">
+                        <i data-lucide="map-pin-off" class="w-6 h-6 mx-auto mb-2 opacity-50"></i>
+                        <p class="text-[10px]">Belum ada lokasi yang ditandai.<br>Gunakan mode menandai pada peta.</p>
+                    </div>
+                `;
+                lucide.createIcons();
+                return;
+            }
+
+            listContainer.innerHTML = ''; 
+
+            userMarkers.forEach(m => {
+                const lat = m.marker.getLatLng().lat.toFixed(4);
+                const lng = m.marker.getLatLng().lng.toFixed(4);
+                const noteText = m.note ? m.note : "<em class='text-slate-400'>(Belum ada catatan)</em>";
+                
+                const itemHTML = `
+                    <div class="p-3 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors cursor-pointer group" onclick="panToUserMarker(${m.id})">
+                        <div class="flex justify-between items-start mb-1">
+                            <span class="text-[10px] font-mono text-slate-500 bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded flex items-center gap-1"><i data-lucide="crosshair" class="w-3 h-3"></i> ${lat}, ${lng}</span>
+                            <button onclick="deleteUserMarker(event, ${m.id})" class="text-slate-400 hover:text-rose-500 transition-colors opacity-0 group-hover:opacity-100" title="Hapus Catatan"><i data-lucide="trash-2" class="w-3 h-3"></i></button>
+                        </div>
+                        <p class="text-xs font-medium text-slate-700 dark:text-slate-300 line-clamp-2 mt-1 leading-relaxed">${noteText}</p>
+                    </div>
+                `;
+                listContainer.insertAdjacentHTML('beforeend', itemHTML);
+            });
+            
+            lucide.createIcons();
+        };
+
+        // FUNGSI: Menggeser peta ke titik catatan yang diklik dari daftar
+        window.panToUserMarker = function(id) {
+            const m = userMarkers.find(x => x.id === id);
+            if(m && exploreMap) {
+                const latlng = m.marker.getLatLng();
+                exploreMap.setView(latlng, 15);
+                
+                if(exploreMap.hasLayer(m.marker)) {
+                    m.marker.openPopup();
+                } else {
+                    L.popup()
+                        .setLatLng(latlng)
+                        .setContent(`<div class="p-1 text-xs"><b>Catatan Anda:</b><br>${m.note || '(Belum ada catatan)'}</div>`)
+                        .openOn(exploreMap);
+                }
+
+                // Scroll layar ke peta jika diakses lewat HP
+                if(window.innerWidth < 1024) {
+                    setTimeout(() => {
+                        document.getElementById('exploreMapContainer').scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }, 100);
+                }
+            }
+        };
+
+        // FUNGSI: Menghapus titik dan catatan dari array dan peta
+        window.deleteUserMarker = function(event, id) {
+            event.stopPropagation(); // Mencegah panToUserMarker ikut tereksekusi saat tombol hapus diklik
+            const index = userMarkers.findIndex(x => x.id === id);
+            if(index !== -1) {
+                const m = userMarkers[index];
+                if(map && map.hasLayer(m.marker)) map.removeLayer(m.marker);
+                if(exploreMap && exploreMap.hasLayer(m.marker)) exploreMap.removeLayer(m.marker);
+                
+                userMarkers.splice(index, 1);
+                updateSavedNotesUI(); // Refresh daftar setelah dihapus
             }
         };
 
