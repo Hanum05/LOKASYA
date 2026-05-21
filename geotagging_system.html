@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="id" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Geotagging System - LOKASYA</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Leaflet Map CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    
+    <!-- Tailwind Config -->
+    <script>
+        tailwind.config = {
+            darkMode: 'media',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    animation: {
+                        'radar-spin': 'spin 4s linear infinite',
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <style>
+        @keyframes fade-in {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-in {
+            animation: fade-in 0.6s ease-out forwards;
+        }
+        
+        /* Dark mode map adjustments */
+        @media (prefers-color-scheme: dark) {
+            .leaflet-layer,
+            .leaflet-control-zoom-in,
+            .leaflet-control-zoom-out,
+            .leaflet-control-attribution {
+                filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%);
+            }
+        }
+        
+        /* Custom Scrollbar for list */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background-color: #cbd5e1;
+            border-radius: 20px;
+        }
+        .dark .custom-scrollbar::-webkit-scrollbar-thumb {
+            background-color: #475569;
+        }
+        
+        /* Custom Marker CSS */
+        .custom-map-marker {
+            background-color: #10b981;
+            border: 3px solid white;
+            border-radius: 50%;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+    </style>
+</head>
+<body class="bg-slate-50 dark:bg-slate-950 font-sans text-slate-800 dark:text-slate-200 flex flex-col min-h-screen transition-colors duration-300">
+
+    <!-- Navigation (Simplified for sub-pages) -->
+    <nav class="fixed w-full z-50 bg-white/90 dark:bg-slate-950/90 border-b border-slate-200 dark:border-slate-800 backdrop-blur-md shadow-sm transition-all duration-300">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <!-- Back to Home -->
+                <a href="index.html" class="flex items-center gap-2 text-slate-600 dark:text-slate-300 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors group">
+                    <i data-lucide="arrow-left" class="w-5 h-5 group-hover:-translate-x-1 transition-transform"></i>
+                    <span class="font-medium">Kembali ke Beranda</span>
+                </a>
+                
+                <!-- Logo -->
+                <div class="flex items-center gap-2">
+                    <div class="w-8 h-8 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-lg flex items-center justify-center text-white shadow-md">
+                        <i data-lucide="map-pin" class="w-4 h-4"></i>
+                    </div>
+                    <span class="font-bold text-xl tracking-tight text-teal-900 dark:text-teal-400 hidden sm:block">LOKASYA</span>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="flex-grow pt-24 pb-20">
+        
+        <!-- Hero Detail Section -->
+        <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 animate-in">
+            <!-- Breadcrumbs -->
+            <nav class="flex text-sm text-slate-500 dark:text-slate-400 mb-8" aria-label="Breadcrumb">
+                <ol class="inline-flex items-center space-x-1 md:space-x-3">
+                    <li class="inline-flex items-center">
+                        <a href="index.html" class="hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors">Teknologi Inti</a>
+                    </li>
+                    <li>
+                        <div class="flex items-center">
+                            <i data-lucide="chevron-right" class="w-4 h-4 mx-1"></i>
+                            <span class="text-slate-800 dark:text-slate-200 font-medium">Geotagging System</span>
+                        </div>
+                    </li>
+                </ol>
+            </nav>
+
+            <div class="bg-white dark:bg-slate-900 rounded-3xl shadow-lg border border-slate-100 dark:border-slate-800 overflow-hidden transition-colors mb-12">
+                <div class="grid lg:grid-cols-2">
+                    
+                    <!-- Text Content -->
+                    <div class="p-8 md:p-12 lg:p-16 flex flex-col justify-center">
+                        <div class="w-16 h-16 rounded-2xl flex items-center justify-center mb-6 bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400">
+                            <i data-lucide="map-pin" class="w-8 h-8"></i>
+                        </div>
+                        <h1 class="text-3xl md:text-4xl font-bold text-slate-900 dark:text-white mb-4 leading-tight">
+                            Validasi Lokasi Fisik Anti-Manipulasi
+                        </h1>
+                        <p class="text-lg text-slate-600 dark:text-slate-300 mb-8 leading-relaxed">
+                            Sistem Geotagging LOKASYA adalah benteng pertahanan utama untuk memastikan bahwa setiap usaha atau proyek yang mencari pendanaan syariah benar-benar memiliki wujud fisik dan beroperasi di lokasi yang diklaim.
+                        </p>
+                        
+                        <div class="space-y-4">
+                            <div class="flex items-start gap-4">
+                                <div class="mt-1 bg-emerald-100 dark:bg-emerald-900/50 p-1.5 rounded-full text-emerald-600 dark:text-emerald-400 shrink-0">
+                                    <i data-lucide="crosshair" class="w-4 h-4"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-bold text-slate-800 dark:text-slate-200">Akurasi GPS Presisi Tinggi</h4>
+                                    <p class="text-sm text-slate-600 dark:text-slate-400">Memanfaatkan data geospasial terkini untuk mengunci dan memverifikasi batas properti atau lahan operasional UMKM.</p>
+                                </div>
+                            </div>
+                            <div class="flex items-start gap-4">
+                                <div class="mt-1 bg-emerald-100 dark:bg-emerald-900/50 p-1.5 rounded-full text-emerald-600 dark:text-emerald-400 shrink-0">
+                                    <i data-lucide="shield-alert" class="w-4 h-4"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-bold text-slate-800 dark:text-slate-200">Anti-Spoofing Technology</h4>
+                                    <p class="text-sm text-slate-600 dark:text-slate-400">Mendeteksi dan menolak upaya pemalsuan lokasi menggunakan Fake GPS atau VPN, memastikan integritas data lokasi otentik.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Intro Image / Graphic -->
+                    <div class="bg-slate-50 dark:bg-slate-800/50 p-8 flex items-center justify-center border-l border-slate-100 dark:border-slate-800 relative overflow-hidden transition-colors">
+                        <div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-5 dark:opacity-10"></div>
+                        <div class="absolute -right-20 -top-20 w-64 h-64 bg-emerald-400/20 rounded-full blur-3xl"></div>
+                        
+                        <div class="relative z-10 text-center">
+                            <div class="inline-flex items-center justify-center w-32 h-32 rounded-full border-4 border-emerald-100 dark:border-emerald-900/50 bg-emerald-50 dark:bg-emerald-900/20 mb-6 relative">
+                                <div class="absolute inset-0 rounded-full border border-emerald-500/30 animate-ping"></div>
+                                <i data-lucide="satellite" class="w-12 h-12 text-emerald-500"></i>
+                            </div>
+                            <h3 class="text-xl font-bold text-slate-800 dark:text-white mb-2">Terhubung ke Satelit</h3>
+                            <p class="text-slate-500 dark:text-slate-400 text-sm max-w-xs">Menggunakan API Pemetaan Real-time untuk melacak dan mendokumentasikan koordinat persis setiap properti atau lahan usaha.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Interactive Demo Section -->
+            <div class="mb-16">
+                <div class="mb-6 flex items-center justify-between">
+                    <div>
+                        <h2 class="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                            <i data-lucide="mouse-pointer-click" class="text-emerald-500"></i>
+                            Demo Interaktif: Peta Geotagging & Dokumentasi
+                        </h2>
+                        <p class="text-slate-500 dark:text-slate-400 mt-1 text-sm">Klik di mana saja pada peta untuk menandai lokasi fisik usaha, lalu tambahkan dokumentasi catatan lapangan.</p>
+                    </div>
+                </div>
+
+                <div class="grid lg:grid-cols-12 gap-6 h-[600px]">
+                    <!-- Map Container -->
+                    <div class="lg:col-span-7 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-md overflow-hidden relative flex flex-col h-full">
+                        <div class="bg-emerald-600 dark:bg-emerald-800 p-3 text-white flex justify-between items-center shadow-md relative z-20">
+                            <div class="flex items-center gap-2">
+                                <i data-lucide="map" class="w-4 h-4"></i>
+                                <span class="font-semibold text-sm">Peta Geospasial LOKASYA</span>
+                            </div>
+                            <div class="text-xs bg-white/20 px-2 py-1 rounded">Live Data</div>
+                        </div>
+                        
+                        <!-- Leaflet Map Div -->
+                        <div id="geotagMap" class="w-full flex-1 z-10 bg-slate-100 dark:bg-slate-800"></div>
+                        
+                        <!-- Map Instructions Overlay -->
+                        <div id="mapInstruction" class="absolute bottom-6 left-1/2 transform -translate-x-1/2 bg-white/90 dark:bg-slate-900/90 backdrop-blur border border-slate-200 dark:border-slate-700 px-4 py-2 rounded-full shadow-lg z-20 flex items-center gap-2 pointer-events-none transition-opacity duration-300">
+                            <div class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
+                            <span class="text-sm font-medium text-slate-800 dark:text-slate-200">Klik area peta untuk menandai lokasi</span>
+                        </div>
+                    </div>
+
+                    <!-- Sidebar: Location List & Documentation -->
+                    <div class="lg:col-span-5 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-md overflow-hidden flex flex-col h-full">
+                        <div class="p-4 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50 dark:bg-slate-900/50">
+                            <h3 class="font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
+                                <i data-lucide="list-checks" class="w-5 h-5 text-emerald-500"></i>
+                                Daftar Lokasi Tersimpan
+                            </h3>
+                            <span id="locationCount" class="bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-400 text-xs font-bold px-2.5 py-1 rounded-full">0 Lokasi</span>
+                        </div>
+                        
+                        <!-- List Container -->
+                        <div id="locationList" class="flex-1 overflow-y-auto custom-scrollbar p-4 space-y-4 bg-slate-50 dark:bg-slate-950/20">
+                            
+                            <!-- Empty State -->
+                            <div id="emptyState" class="h-full flex flex-col items-center justify-center text-center text-slate-400 dark:text-slate-500 opacity-70">
+                                <i data-lucide="map-pin-off" class="w-12 h-12 mb-3"></i>
+                                <p class="text-sm max-w-[200px]">Belum ada lokasi yang ditandai. Klik pada peta untuk menambahkan titik usaha.</p>
+                            </div>
+
+                            <!-- Marker Items will be injected here via JS -->
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Detail Section -->
+            <div class="mt-16 grid md:grid-cols-3 gap-8">
+                <div class="md:col-span-3 mb-4">
+                    <h2 class="text-2xl font-bold text-slate-900 dark:text-white border-b border-slate-200 dark:border-slate-800 pb-4 transition-colors">Kegunaan & Alur Sistem</h2>
+                </div>
+                
+                <div class="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 transition-colors">
+                    <div class="w-10 h-10 rounded-full bg-sky-100 dark:bg-sky-900/40 flex items-center justify-center text-sky-600 dark:text-sky-400 mb-4">
+                        <i data-lucide="focus" class="w-5 h-5"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-slate-800 dark:text-slate-100 mb-2">Geofencing & Zonasi</h3>
+                    <p class="text-slate-600 dark:text-slate-400 text-sm leading-relaxed">
+                        Sistem menetapkan batasan virtual (radius) untuk area operasional usaha. Jika terdapat laporan aktivitas proyek di luar zonasi terdaftar tanpa ada pembaruan dokumen legal, sistem akan memberikan label merah (risiko tinggi).
+                    </p>
+                </div>
+
+                <div class="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 transition-colors">
+                    <div class="w-10 h-10 rounded-full bg-amber-100 dark:bg-amber-900/40 flex items-center justify-center text-amber-600 dark:text-amber-400 mb-4">
+                        <i data-lucide="camera" class="w-5 h-5"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-slate-800 dark:text-slate-100 mb-2">Metadata Foto Lapangan</h3>
+                    <p class="text-slate-600 dark:text-slate-400 text-sm leading-relaxed">
+                        Pemilik usaha wajib melakukan foto lapangan (*live update*) melalui sistem LOKASYA. Foto ini menyematkan EXIF data terenkripsi (titik koordinat & timestamp) yang tidak dapat dimodifikasi pihak ketiga.
+                    </p>
+                </div>
+
+                <div class="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 transition-colors">
+                    <div class="w-10 h-10 rounded-full bg-rose-100 dark:bg-rose-900/40 flex items-center justify-center text-rose-600 dark:text-rose-400 mb-4">
+                        <i data-lucide="ban" class="w-5 h-5"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-slate-800 dark:text-slate-100 mb-2">Pencegahan Gharar</h3>
+                    <p class="text-slate-600 dark:text-slate-400 text-sm leading-relaxed">
+                        Dalam prinsip syariah, objek investasi (Mabi') harus jelas wujud dan lokasinya. Validasi geotagging ini otomatis menggugurkan entitas bisnis fiktif yang melanggar prinsip kepastian transaksi syariah.
+                    </p>
+                </div>
+            </div>
+            
+        </section>
+    </main>
+
+    <!-- Minimal Footer -->
+    <footer class="bg-slate-900 text-slate-400 py-8 border-t border-slate-800 mt-auto">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-sm">
+            <p>&copy; 2026 LOKASYA by Tim TriRen. Delegasi SHEIF KSEI FEB UNNES.</p>
+        </div>
+    </footer>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    
+    <!-- Script Utama Aplikasi -->
+    <script>
+        // Inisialisasi ikon Lucide
+        lucide.createIcons();
+
+        // 1. DATA STATE APLIKASI
+        let savedLocations = [];
+        let map;
+        let markersGroup;
+
+        // 2. INISIALISASI PETA LEAFLET (Berfungsi mirip Google Maps)
+        document.addEventListener('DOMContentLoaded', () => {
+            // Mengatur titik tengah peta (Default: Surabaya, Jawa Timur)
+            map = L.map('geotagMap').setView([-7.250445, 112.768845], 13);
+
+            // Menggunakan tile layer gratis dari OpenStreetMap (Standard industri untuk open source)
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 19,
+                attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+            }).addTo(map);
+
+            // Layer group khusus untuk marker kita
+            markersGroup = L.layerGroup().addTo(map);
+
+            // 3. EVENT LISTENER: Menambahkan marker saat peta diklik
+            map.on('click', function(e) {
+                const lat = e.latlng.lat;
+                const lng = e.latlng.lng;
+                
+                // Menghilangkan instruksi "Klik area peta"
+                const instruction = document.getElementById('mapInstruction');
+                if(instruction) instruction.style.opacity = '0';
+
+                // Buat ID unik untuk lokasi
+                const locationId = 'loc_' + Date.now();
+                const defaultName = `Lokasi Usaha #${savedLocations.length + 1}`;
+
+                // Simpan data ke state array
+                const newLocation = {
+                    id: locationId,
+                    name: defaultName,
+                    lat: lat,
+                    lng: lng,
+                    note: '',
+                    timestamp: new Date().toLocaleString('id-ID')
+                };
+                
+                savedLocations.push(newLocation);
+                
+                // Tambahkan Marker ke Peta
+                addMarkerToMap(newLocation);
+                
+                // Perbarui antarmuka daftar
+                updateLocationListUI();
+            });
+        });
+
+        // 4. FUNGSI: Menambahkan Marker Visual ke Peta
+        function addMarkerToMap(locationData) {
+            // Membuat icon kustom
+            const customIcon = L.divIcon({
+                className: 'custom-map-marker',
+                iconSize: [20, 20],
+                iconAnchor: [10, 10],
+                popupAnchor: [0, -10]
+            });
+
+            // Menambahkan marker
+            const marker = L.marker([locationData.lat, locationData.lng], {icon: customIcon})
+                .addTo(markersGroup)
+                .bindPopup(`<b>${locationData.name}</b><br><span style="font-size:10px;color:gray;">Lat: ${locationData.lat.toFixed(4)}, Lng: ${locationData.lng.toFixed(4)}</span>`);
+            
+            // Buka popup secara otomatis
+            marker.openPopup();
+        }
+
+        // 5. FUNGSI: Memperbarui UI Daftar Lokasi dan Form Catatan
+        function updateLocationListUI() {
+            const listContainer = document.getElementById('locationList');
+            const emptyState = document.getElementById('emptyState');
+            const counter = document.getElementById('locationCount');
+
+            // Update Counter
+            counter.innerText = `${savedLocations.length} Lokasi`;
+
+            // Hapus Empty state jika ada data
+            if (savedLocations.length > 0 && emptyState) {
+                emptyState.style.display = 'none';
+            }
+
+            // Render ulang list (pendekatan sederhana re-render)
+            listContainer.innerHTML = '';
+            
+            // Loop dari belakang agar yang terbaru di atas
+            [...savedLocations].reverse().forEach(loc => {
+                const itemHTML = `
+                    <div class="bg-white dark:bg-slate-800 rounded-xl p-4 shadow-sm border border-slate-200 dark:border-slate-700 transition-colors animate-in">
+                        <div class="flex items-start justify-between mb-3">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-full bg-emerald-100 dark:bg-emerald-900/50 flex items-center justify-center text-emerald-600 dark:text-emerald-400 shrink-0">
+                                    <i data-lucide="map-pin" class="w-5 h-5"></i>
+                                </div>
+                                <div>
+                                    <!-- Input Nama Lokasi Inline -->
+                                    <input type="text" 
+                                        id="name_${loc.id}" 
+                                        value="${loc.name}" 
+                                        class="font-bold text-slate-800 dark:text-slate-100 bg-transparent border-b border-transparent focus:border-emerald-500 outline-none w-full text-sm mb-0.5 transition-colors"
+                                        placeholder="Nama Lokasi Usaha..."
+                                        onchange="updateData('${loc.id}', 'name', this.value)"
+                                    >
+                                    <p class="text-[10px] text-slate-500 font-mono">
+                                        ${loc.lat.toFixed(5)}, ${loc.lng.toFixed(5)}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Textarea Dokumentasi / Catatan -->
+                        <div class="mt-3">
+                            <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Dokumentasi / Catatan Lapangan:</label>
+                            <textarea 
+                                id="note_${loc.id}" 
+                                rows="2" 
+                                class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg p-2.5 text-sm text-slate-800 dark:text-slate-200 outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 transition-all resize-none"
+                                placeholder="Cth: Lahan proyek pembangunan ruko, sesuai dengan data NIB..."
+                            >${loc.note}</textarea>
+                        </div>
+                        
+                        <!-- Actions -->
+                        <div class="mt-3 flex items-center justify-between">
+                            <span class="text-[10px] text-slate-400"><i data-lucide="clock" class="w-3 h-3 inline mr-1 mb-0.5"></i>${loc.timestamp}</span>
+                            
+                            <div class="flex items-center gap-2">
+                                <span id="status_${loc.id}" class="text-[10px] text-emerald-500 font-medium opacity-0 transition-opacity">Tersimpan!</span>
+                                <button onclick="saveNote('${loc.id}')" class="bg-slate-800 dark:bg-slate-700 hover:bg-emerald-600 dark:hover:bg-emerald-600 text-white text-xs font-medium px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5">
+                                    <i data-lucide="save" class="w-3 h-3"></i> Simpan
+                                </button>
+                                <button onclick="deleteLocation('${loc.id}')" class="text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 p-1.5 rounded-lg transition-colors">
+                                    <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                listContainer.insertAdjacentHTML('beforeend', itemHTML);
+            });
+            
+            // Re-inisialisasi ikon lucide untuk elemen baru yang baru dirender
+            lucide.createIcons();
+        }
+
+        // 6. FUNGSI: Mengupdate Data State saat input diubah
+        window.updateData = function(id, field, value) {
+            const index = savedLocations.findIndex(loc => loc.id === id);
+            if(index !== -1) {
+                savedLocations[index][field] = value;
+                
+                // Jika nama diubah, perbarui juga popup di peta
+                if(field === 'name') {
+                    // Cari layer marker dengan mencocokkan latlng (pendekatan sederhana)
+                    markersGroup.eachLayer(function (layer) {
+                        const loc = savedLocations[index];
+                        if (layer.getLatLng().lat === loc.lat && layer.getLatLng().lng === loc.lng) {
+                            layer.setPopupContent(`<b>${value}</b><br><span style="font-size:10px;color:gray;">Lat: ${loc.lat.toFixed(4)}, Lng: ${loc.lng.toFixed(4)}</span>`);
+                        }
+                    });
+                }
+            }
+        }
+
+        // 7. FUNGSI: Menyimpan Catatan Dokumentasi
+        window.saveNote = function(id) {
+            const textarea = document.getElementById(`note_${id}`);
+            const statusText = document.getElementById(`status_${id}`);
+            
+            // Simpan nilai ke array state
+            updateData(id, 'note', textarea.value);
+            
+            // Tampilkan animasi "Tersimpan!"
+            statusText.style.opacity = '1';
+            setTimeout(() => {
+                statusText.style.opacity = '0';
+            }, 2000);
+        }
+
+        // 8. FUNGSI: Menghapus Lokasi
+        window.deleteLocation = function(id) {
+            const index = savedLocations.findIndex(loc => loc.id === id);
+            if(index !== -1) {
+                const locToDelete = savedLocations[index];
+                
+                // Hapus marker dari peta
+                markersGroup.eachLayer(function (layer) {
+                    if (layer.getLatLng().lat === locToDelete.lat && layer.getLatLng().lng === locToDelete.lng) {
+                        markersGroup.removeLayer(layer);
+                    }
+                });
+                
+                // Hapus dari array dan update UI
+                savedLocations.splice(index, 1);
+                updateLocationListUI();
+                
+                // Tampilkan kembali empty state jika array kosong
+                if(savedLocations.length === 0) {
+                     const listContainer = document.getElementById('locationList');
+                     listContainer.innerHTML = `
+                        <div id="emptyState" class="h-full flex flex-col items-center justify-center text-center text-slate-400 dark:text-slate-500 opacity-70">
+                            <i data-lucide="map-pin-off" class="w-12 h-12 mb-3"></i>
+                            <p class="text-sm max-w-[200px]">Belum ada lokasi yang ditandai. Klik pada peta untuk menambahkan titik usaha.</p>
+                        </div>
+                     `;
+                     lucide.createIcons();
+                }
+            }
+        }
+    </script>
+</body>
+</html>
