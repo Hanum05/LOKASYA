@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="id" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LOKASYA App Prototype</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    
+    <!-- Leaflet Map CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    
+    <!-- Tailwind Config -->
+    <script>
+        tailwind.config = {
+            darkMode: 'media',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    animation: {
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'scan-line': 'scan 2s linear infinite',
+                    },
+                    keyframes: {
+                        scan: {
+                            '0%': { top: '0%' },
+                            '100%': { top: '100%' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <style>
+        .view-section {
+            display: none;
+            animation: fadeIn 0.3s ease-out;
+        }
+        .view-section.active {
+            display: block;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 10px; }
+        .dark ::-webkit-scrollbar-thumb { background-color: #475569; }
+
+        /* Map fixes */
+        #appMap { height: 100%; min-height: 400px; z-index: 10; }
+        .leaflet-popup-content { margin: 12px; }
+        
+        @media (prefers-color-scheme: dark) {
+            .leaflet-layer, .leaflet-control-zoom-in, .leaflet-control-zoom-out, .leaflet-control-attribution {
+                filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%);
+            }
+        }
+    </style>
+</head>
+<body class="bg-slate-50 dark:bg-slate-900 font-sans text-slate-800 dark:text-slate-200 h-screen overflow-hidden flex transition-colors duration-300">
+
+    <!-- Sidebar -->
+    <aside class="w-64 bg-white dark:bg-slate-950 border-r border-slate-200 dark:border-slate-800 flex flex-col transition-colors z-30 hidden md:flex shrink-0">
+        <!-- Logo Area -->
+        <div class="h-16 flex items-center px-6 border-b border-slate-200 dark:border-slate-800">
+            <div class="w-8 h-8 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-lg flex items-center justify-center text-white shadow-md mr-3">
+                <i data-lucide="map-pin" class="w-4 h-4"></i>
+            </div>
+            <span class="font-bold text-xl tracking-tight text-teal-900 dark:text-teal-400">LOKASYA</span>
+        </div>
+
+        <!-- Navigation Menu -->
+        <nav class="flex-1 overflow-y-auto py-4 px-3 space-y-1">
+            <div class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-2 px-3 mt-4">Menu Utama</div>
+            
+            <button onclick="switchView('dashboard')" id="nav-dashboard" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium bg-teal-50 text-teal-700 dark:bg-teal-900/50 dark:text-teal-300 transition-colors">
+                <i data-lucide="layout-dashboard" class="w-5 h-5"></i> Dashboard
+            </button>
+            
+            <button onclick="switchView('map')" id="nav-map" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800 transition-colors">
+                <i data-lucide="map" class="w-5 h-5"></i> Peta Eksplorasi
+            </button>
+
+            <button onclick="switchView('ai')" id="nav-ai" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800 transition-colors">
+                <i data-lucide="brain-circuit" class="w-5 h-5"></i> Verifikasi AI
+            </button>
+
+            <div class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-2 px-3 mt-6">Sistem</div>
+            
+            <button onclick="switchView('security')" id="nav-security" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800 transition-colors relative">
+                <i data-lucide="shield" class="w-5 h-5"></i> Log Keamanan
+                <span class="absolute right-3 w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+            </button>
+        </nav>
+
+        <!-- Bottom Action -->
+        <div class="p-4 border-t border-slate-200 dark:border-slate-800">
+            <a href="index.html" class="flex items-center gap-2 text-sm font-medium text-slate-500 hover:text-slate-800 dark:hover:text-white transition-colors">
+                <i data-lucide="log-out" class="w-4 h-4"></i> Kembali ke Web Utama
+            </a>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="flex-1 flex flex-col h-screen overflow-hidden">
+        
+        <!-- Header -->
+        <header class="h-16 bg-white dark:bg-slate-950 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between px-4 sm:px-6 z-20 transition-colors shrink-0">
+            <!-- Mobile Menu Toggle -->
+            <button class="md:hidden text-slate-500 hover:text-slate-800 dark:hover:text-white">
+                <i data-lucide="menu" class="w-6 h-6"></i>
+            </button>
+
+            <div class="hidden md:flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
+                <span class="px-2 py-1 bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-400 rounded-md font-mono text-xs font-bold flex items-center gap-1.5">
+                    <div class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
+                    SISTEM AKTIF
+                </span>
+            </div>
+
+            <!-- User Profile -->
+            <div class="flex items-center gap-4">
+                <button class="text-slate-400 hover:text-amber-500 transition-colors relative">
+                    <i data-lucide="bell" class="w-5 h-5"></i>
+                    <span class="absolute top-0 right-0 w-2 h-2 rounded-full bg-rose-500 border border-white dark:border-slate-900"></span>
+                </button>
+                <div class="flex items-center gap-3 border-l border-slate-200 dark:border-slate-700 pl-4">
+                    <div class="text-right hidden sm:block">
+                        <div class="text-sm font-bold text-slate-800 dark:text-slate-100">Investor Demo</div>
+                        <div class="text-xs text-slate-500 dark:text-slate-400">ID: INV-8829</div>
+                    </div>
+                    <div class="w-9 h-9 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-slate-600 dark:text-slate-300 font-bold border border-slate-300 dark:border-slate-600">
+                        ID
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Dynamic View Container -->
+        <main class="flex-1 overflow-y-auto bg-slate-50 dark:bg-slate-900 relative custom-scrollbar">
+            
+            <!-- VIEW: DASHBOARD -->
+            <div id="view-dashboard" class="view-section active p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto">
+                <div class="mb-6">
+                    <h1 class="text-2xl font-bold text-slate-900 dark:text-white">Selamat Datang, Investor</h1>
+                    <p class="text-slate-500 dark:text-slate-400 text-sm">Ringkasan portofolio dan status keamanan ekosistem LOKASYA.</p>
+                </div>
+
+                <!-- Stats Grid -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+                    <!-- Stat 1 -->
+                    <div class="bg-white dark:bg-slate-800 rounded-2xl p-5 border border-slate-100 dark:border-slate-700 shadow-sm flex items-center gap-4">
+                        <div class="w-12 h-12 rounded-full bg-blue-100 dark:bg-blue-900/50 flex items-center justify-center text-blue-600 dark:text-blue-400">
+                            <i data-lucide="wallet" class="w-6 h-6"></i>
+                        </div>
+                        <div>
+                            <div class="text-sm text-slate-500 dark:text-slate-400 font-medium">Total Investasi Aktif</div>
+                            <div class="text-xl font-bold text-slate-800 dark:text-slate-100">Rp 150.000.000</div>
+                        </div>
+                    </div>
+                    <!-- Stat 2 -->
+                    <div class="bg-white dark:bg-slate-800 rounded-2xl p-5 border border-slate-100 dark:border-slate-700 shadow-sm flex items-center gap-4">
+                        <div class="w-12 h-12 rounded-full bg-emerald-100 dark:bg-emerald-900/50 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
+                            <i data-lucide="shield-check" class="w-6 h-6"></i>
+                        </div>
+                        <div>
+                            <div class="text-sm text-slate-500 dark:text-slate-400 font-medium">Proyek Tervalidasi</div>
+                            <div class="text-xl font-bold text-slate-800 dark:text-slate-100">124 Entitas</div>
+                        </div>
+                    </div>
+                    <!-- Stat 3 -->
+                    <div class="bg-white dark:bg-slate-800 rounded-2xl p-5 border border-slate-100 dark:border-slate-700 shadow-sm flex items-center gap-4">
+                        <div class="w-12 h-12 rounded-full bg-amber-100 dark:bg-amber-900/50 flex items-center justify-center text-amber-600 dark:text-amber-400">
+                            <i data-lucide="map-pin" class="w-6 h-6"></i>
+                        </div>
+                        <div>
+                            <div class="text-sm text-slate-500 dark:text-slate-400 font-medium">Geotag Aktif</div>
+                            <div class="text-xl font-bold text-slate-800 dark:text-slate-100">98% Match</div>
+                        </div>
+                    </div>
+                    <!-- Stat 4 -->
+                    <div class="bg-white dark:bg-slate-800 rounded-2xl p-5 border border-slate-100 dark:border-slate-700 shadow-sm flex items-center gap-4">
+                        <div class="w-12 h-12 rounded-full bg-rose-100 dark:bg-rose-900/50 flex items-center justify-center text-rose-600 dark:text-rose-400">
+                            <i data-lucide="alert-triangle" class="w-6 h-6"></i>
+                        </div>
+                        <div>
+                            <div class="text-sm text-slate-500 dark:text-slate-400 font-medium">Blokir AI (Bulan Ini)</div>
+                            <div class="text-xl font-bold text-slate-800 dark:text-slate-100">3 Fiktif</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Main Dashboard Content -->
+                <div class="grid lg:grid-cols-3 gap-6">
+                    <!-- Portofolio Saya -->
+                    <div class="lg:col-span-2 bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm overflow-hidden">
+                        <div class="p-5 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center">
+                            <h3 class="font-bold text-slate-800 dark:text-slate-100">Portofolio Saya</h3>
+                            <button class="text-sm text-teal-600 dark:text-teal-400 hover:underline">Lihat Semua</button>
+                        </div>
+                        <div class="p-0">
+                            <table class="w-full text-left border-collapse">
+                                <thead>
+                                    <tr class="bg-slate-50 dark:bg-slate-900/50 text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                                        <th class="p-4 font-medium">Nama Proyek</th>
+                                        <th class="p-4 font-medium">Sektor</th>
+                                        <th class="p-4 font-medium">Nominal</th>
+                                        <th class="p-4 font-medium">Status Risiko</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="text-sm">
+                                    <tr class="border-b border-slate-100 dark:border-slate-700/50 hover:bg-slate-50 dark:hover:bg-slate-700/30">
+                                        <td class="p-4 font-bold text-slate-800 dark:text-slate-200">PT. Agro Syariah</td>
+                                        <td class="p-4 text-slate-500">Pertanian</td>
+                                        <td class="p-4 font-mono">Rp 50 Juta</td>
+                                        <td class="p-4"><span class="px-2 py-1 bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-400 rounded text-xs font-bold">LOW (98)</span></td>
+                                    </tr>
+                                    <tr class="border-b border-slate-100 dark:border-slate-700/50 hover:bg-slate-50 dark:hover:bg-slate-700/30">
+                                        <td class="p-4 font-bold text-slate-800 dark:text-slate-200">Perumahan Darussalam</td>
+                                        <td class="p-4 text-slate-500">Properti</td>
+                                        <td class="p-4 font-mono">Rp 100 Juta</td>
+                                        <td class="p-4"><span class="px-2 py-1 bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-400 rounded text-xs font-bold">LOW (95)</span></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Quick Actions & Status -->
+                    <div class="space-y-6">
+                        <!-- System Status -->
+                        <div class="bg-slate-900 rounded-2xl p-5 shadow-lg border border-slate-800 text-white relative overflow-hidden">
+                            <div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-20"></div>
+                            <h3 class="font-bold mb-4 relative z-10 flex items-center gap-2"><i data-lucide="shield" class="w-4 h-4 text-emerald-400"></i> Sistem Keamanan</h3>
+                            <div class="space-y-3 relative z-10 text-sm">
+                                <div class="flex justify-between items-center">
+                                    <span class="text-slate-400">Enkripsi AES-256</span>
+                                    <span class="text-emerald-400 flex items-center gap-1"><i data-lucide="check" class="w-3 h-3"></i> Aktif</span>
+                                </div>
+                                <div class="flex justify-between items-center">
+                                    <span class="text-slate-400">Cloud Sync</span>
+                                    <span class="text-emerald-400 flex items-center gap-1"><i data-lucide="check" class="w-3 h-3"></i> Terhubung</span>
+                                </div>
+                                <div class="flex justify-between items-center">
+                                    <span class="text-slate-400">Geotagging API</span>
+                                    <span class="text-emerald-400 flex items-center gap-1"><i data-lucide="check" class="w-3 h-3"></i> Online</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Shortcut -->
+                        <div class="bg-gradient-to-br from-teal-500 to-emerald-600 rounded-2xl p-5 shadow-lg text-white">
+                            <h3 class="font-bold mb-2">Eksplorasi Proyek Baru</h3>
+                            <p class="text-teal-100 text-xs mb-4">Temukan proyek syariah yang telah lolos verifikasi AI dan Geotagging.</p>
+                            <button onclick="switchView('map')" class="w-full bg-white text-teal-700 py-2 rounded-lg font-bold text-sm shadow hover:shadow-md transition-all">Buka Peta Digital</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- VIEW: PETA EKSPLORASI -->
+            <div id="view-map" class="view-section h-full flex flex-col">
+                <div class="p-4 sm:p-6 bg-white dark:bg-slate-950 border-b border-slate-200 dark:border-slate-800 shrink-0">
+                    <h1 class="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                        <i data-lucide="map" class="text-amber-500"></i> Peta Eksplorasi Geotagging
+                    </h1>
+                    <p class="text-slate-500 dark:text-slate-400 text-sm mt-1">Pemetaan sebaran proyek investasi syariah yang lokasinya telah divalidasi fisik.</p>
+                </div>
+                
+                <!-- Map UI Container -->
+                <div class="flex-1 relative flex flex-col md:flex-row">
+                    <!-- Map Wrapper -->
+                    <div class="flex-1 relative bg-slate-200">
+                        <div id="appMap" class="absolute inset-0"></div>
+                    </div>
+                    
+                    <!-- Floating / Sidebar Project Info -->
+                    <div class="w-full md:w-80 bg-white dark:bg-slate-900 border-l border-slate-200 dark:border-slate-800 overflow-y-auto shrink-0 z-20 shadow-[-4px_0_15px_rgba(0,0,0,0.05)]">
+                        <div class="p-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50">
+                            <h3 class="font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
+                                <i data-lucide="info" class="w-4 h-4 text-teal-500"></i> Detail Proyek Terpilih
+                            </h3>
+                        </div>
+                        
+                        <div id="mapEmptyState" class="p-8 text-center text-slate-400 flex flex-col items-center">
+                            <i data-lucide="pointer" class="w-8 h-8 mb-3 opacity-50"></i>
+                            <p class="text-sm">Pilih salah satu pin di peta untuk melihat detail usaha.</p>
+                        </div>
+
+                        <div id="mapDetailContent" class="hidden p-0 animate-in">
+                            <img id="mImg" src="https://placehold.co/400x200/1e293b/10b981?text=Peternakan" class="w-full h-32 object-cover" alt="cover">
+                            <div class="p-4">
+                                <div class="flex justify-between items-start mb-1">
+                                    <h4 id="mTitle" class="font-bold text-slate-900 dark:text-white">Peternakan Qurban</h4>
+                                    <span class="bg-emerald-100 text-emerald-700 text-[10px] px-2 py-0.5 rounded font-bold">AMAN</span>
+                                </div>
+                                <p id="mLoc" class="text-xs text-slate-500 dark:text-slate-400 mb-4 flex items-start gap-1">
+                                    <i data-lucide="map-pin" class="w-3 h-3 mt-0.5 shrink-0"></i> <span>Gunung Pati, Semarang</span>
+                                </p>
+                                
+                                <div class="bg-slate-50 dark:bg-slate-800 p-3 rounded-lg border border-slate-100 dark:border-slate-700 mb-4">
+                                    <div class="flex justify-between text-xs mb-1">
+                                        <span class="text-slate-500">Risk Score AI</span>
+                                        <span class="font-bold text-emerald-500">92/100</span>
+                                    </div>
+                                    <div class="w-full bg-slate-200 dark:bg-slate-700 h-1.5 rounded-full"><div class="bg-emerald-500 h-1.5 rounded-full" style="width: 92%"></div></div>
+                                </div>
+                                
+                                <button class="w-full bg-teal-600 text-white text-sm py-2 rounded-lg font-medium hover:bg-teal-700 transition-colors">Lihat Prospektus Investasi</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- VIEW: VERIFIKASI AI -->
+            <div id="view-ai" class="view-section p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto h-full flex flex-col">
+                <div class="mb-6 shrink-0">
+                    <h1 class="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                        <i data-lucide="brain-circuit" class="text-rose-500"></i> Smart AI Verifier
+                    </h1>
+                    <p class="text-slate-500 dark:text-slate-400 text-sm mt-1">Sistem pengecekan otomatis legalitas dan geolokasi untuk mendeteksi investasi fiktif.</p>
+                </div>
+
+                <div class="flex-1 grid lg:grid-cols-2 gap-6 min-h-[500px]">
+                    <!-- Input Section -->
+                    <div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm p-6 flex flex-col">
+                        <h3 class="font-bold text-slate-800 dark:text-white mb-4">Upload Dokumen Pengajuan</h3>
+                        
+                        <div class="border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-xl p-8 text-center bg-slate-50 dark:bg-slate-900/50 flex-1 flex flex-col justify-center items-center mb-6 relative overflow-hidden">
+                            <i data-lucide="file-up" class="w-10 h-10 text-slate-400 mb-3 relative z-10"></i>
+                            <p class="text-sm font-medium text-slate-700 dark:text-slate-300 relative z-10">Pilih berkas Proyek (PDF/ZIP)</p>
+                            <p class="text-xs text-slate-500 mt-1 relative z-10">NIB, KTP, Foto Geotagging</p>
+                            
+                            <!-- Scanner animation element -->
+                            <div id="aiScannerLine" class="absolute left-0 w-full h-1 bg-rose-500 shadow-[0_0_15px_rgba(244,63,94,1)] hidden z-20"></div>
+                        </div>
+
+                        <div class="bg-amber-50 dark:bg-amber-900/20 p-3 rounded-lg border border-amber-200 dark:border-amber-800 mb-4 text-xs text-amber-800 dark:text-amber-400">
+                            <b>Demo Mode:</b> Klik tombol di bawah untuk menjalankan simulasi pemindaian pada data sampel.
+                        </div>
+
+                        <button id="btnRunAi" onclick="simulateAI()" class="w-full bg-rose-600 hover:bg-rose-700 text-white font-medium py-3 rounded-xl transition-all shadow flex items-center justify-center gap-2 mt-auto">
+                            <i data-lucide="scan-line" class="w-5 h-5"></i> Mulai Analisis AI
+                        </button>
+                    </div>
+
+                    <!-- Result Section -->
+                    <div class="bg-slate-900 rounded-2xl border border-slate-800 shadow-xl p-6 text-slate-300 flex flex-col relative">
+                        <div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-10 rounded-2xl pointer-events-none"></div>
+                        
+                        <h3 class="font-bold text-white mb-6 relative z-10 flex items-center gap-2">
+                            <i data-lucide="terminal" class="w-4 h-4 text-emerald-400"></i> AI Processing Engine
+                        </h3>
+
+                        <div id="aiStandby" class="flex-1 flex flex-col items-center justify-center text-slate-500 relative z-10">
+                            <i data-lucide="cpu" class="w-12 h-12 mb-2 opacity-30"></i>
+                            <p class="text-sm font-mono">Status: STANDBY</p>
+                        </div>
+
+                        <div id="aiProcessUi" class="hidden flex-1 flex-col font-mono text-xs space-y-4 relative z-10">
+                            <div id="p1" class="opacity-30 transition-opacity flex items-center gap-3"><div class="w-2 h-2 bg-emerald-500 rounded-full"></div> <span>[OCR] Memindai NIB 8129...</span></div>
+                            <div id="p2" class="opacity-30 transition-opacity flex items-center gap-3"><div class="w-2 h-2 bg-emerald-500 rounded-full"></div> <span>[GEO] Memvalidasi Koordinat Exif Foto...</span></div>
+                            <div id="p3" class="opacity-30 transition-opacity flex items-center gap-3"><div class="w-2 h-2 bg-emerald-500 rounded-full"></div> <span>[DB] Mencocokkan dengan Cloud Ledger...</span></div>
+                            <div id="p4" class="opacity-30 transition-opacity flex items-center gap-3"><div class="w-2 h-2 bg-emerald-500 rounded-full"></div> <span>[ML] Menghitung Skoring Fraud...</span></div>
+                            
+                            <div id="aiFinal" class="hidden mt-6 pt-6 border-t border-slate-700 animate-in">
+                                <div class="flex items-center justify-between mb-2">
+                                    <span class="text-slate-400">Hasil Analisis:</span>
+                                    <span class="bg-emerald-500/20 text-emerald-400 px-2 py-1 rounded font-bold text-sm">AMAN (LOW RISK)</span>
+                                </div>
+                                <div class="bg-black/50 p-3 rounded border border-slate-700">
+                                    <div class="flex justify-between mb-1"><span>Match Dokumen</span><span class="text-emerald-400">100%</span></div>
+                                    <div class="flex justify-between mb-1"><span>Match Lokasi Fisik</span><span class="text-emerald-400">98% (< 5m diff)</span></div>
+                                    <div class="flex justify-between"><span>Indikasi Gharar</span><span class="text-emerald-400">Negatif</span></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- VIEW: LOG KEAMANAN & CLOUD -->
+            <div id="view-security" class="view-section p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto h-full flex flex-col">
+                <div class="mb-6 shrink-0 flex justify-between items-end">
+                    <div>
+                        <h1 class="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                            <i data-lucide="shield" class="text-indigo-500"></i> Sistem Keamanan Server
+                        </h1>
+                        <p class="text-slate-500 dark:text-slate-400 text-sm mt-1">Pemantauan real-time aktivitas enkripsi (AES-256) dan sinkronisasi Cloud Database.</p>
+                    </div>
+                    <span class="bg-indigo-100 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-400 text-xs font-bold px-3 py-1.5 rounded-full flex items-center gap-2 border border-indigo-200 dark:border-indigo-800">
+                        <div class="w-2 h-2 bg-indigo-500 rounded-full animate-pulse"></div> END-TO-END SECURE
+                    </span>
+                </div>
+
+                <div class="bg-slate-950 rounded-2xl border border-slate-800 shadow-xl overflow-hidden flex flex-col flex-1 relative font-mono text-sm text-slate-300">
+                    <!-- Decor -->
+                    <div class="h-8 bg-slate-900 border-b border-slate-800 flex items-center px-4 gap-2 shrink-0">
+                        <div class="w-3 h-3 rounded-full bg-red-500/80"></div>
+                        <div class="w-3 h-3 rounded-full bg-amber-500/80"></div>
+                        <div class="w-3 h-3 rounded-full bg-green-500/80"></div>
+                        <span class="text-slate-500 text-xs ml-2">root@lokasya-cloud-db:~</span>
+                    </div>
+
+                    <div id="terminalBody" class="p-4 flex-1 overflow-y-auto custom-scrollbar leading-relaxed">
+                        <div class="text-emerald-500 mb-4">
+                            LOKASYA Security Ledger v1.0.4<br>
+                            Connected to Node: SG-1 (Uptime: 99.99%)<br>
+                            Encryption: AES-256 Active
+                        </div>
+                        <div id="logStream" class="space-y-1">
+                            <!-- Logs injected via JS -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <script>
+        lucide.createIcons();
+
+        // --- NAVIGATION LOGIC (SPA) ---
+        function switchView(viewId) {
+            // Hide all views
+            document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+            // Remove active style from all nav buttons
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.className = "nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800 transition-colors";
+            });
+
+            // Show selected view
+            const targetView = document.getElementById(`view-${viewId}`);
+            if(targetView) targetView.classList.add('active');
+
+            // Style active nav button
+            const targetBtn = document.getElementById(`nav-${viewId}`);
+            if(targetBtn) {
+                targetBtn.className = "nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium bg-teal-50 text-teal-700 dark:bg-teal-900/50 dark:text-teal-300 transition-colors";
+            }
+
+            // Specific View Initializations
+            if(viewId === 'map') {
+                initMap();
+            } else if (viewId === 'security') {
+                startSecurityLogs();
+            }
+        }
+
+        // --- MAP LOGIC (Leaflet) ---
+        let mapInstance = null;
+        const mapData = [
+            { lat: -7.0051, lng: 110.4381, name: "Perumahan Syariah", score: 95, icon: 'home' },
+            { lat: -7.1509, lng: 110.4069, name: "Koperasi Tani", score: 90, icon: 'tractor' },
+            { lat: -6.9826, lng: 110.4208, name: "Grosir Halal", score: 98, icon: 'shopping-cart' }
+        ];
+
+        function initMap() {
+            if(mapInstance) {
+                // Must call invalidateSize because map container was hidden (display:none)
+                setTimeout(() => mapInstance.invalidateSize(), 100);
+                return;
+            }
+
+            mapInstance = L.map('appMap').setView([-7.0500, 110.4200], 11);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 18 }).addTo(mapInstance);
+
+            mapData.forEach(d => {
+                const markerHtml = `<div style="background:#10b981;width:24px;height:24px;border-radius:50%;border:3px solid white;box-shadow:0 2px 4px rgba(0,0,0,0.3);"></div>`;
+                const icon = L.divIcon({ html: markerHtml, className: '', iconSize: [24,24], iconAnchor: [12,12] });
+                
+                const marker = L.marker([d.lat, d.lng], {icon}).addTo(mapInstance);
+                
+                marker.on('click', () => {
+                    document.getElementById('mapEmptyState').classList.add('hidden');
+                    const detailContent = document.getElementById('mapDetailContent');
+                    detailContent.classList.remove('hidden');
+                    
+                    document.getElementById('mTitle').innerText = d.name;
+                    document.getElementById('mLoc').innerHTML = `<i data-lucide="map-pin" class="w-3 h-3 mt-0.5 shrink-0"></i> <span>Lat: ${d.lat}, Lng: ${d.lng}</span>`;
+                    lucide.createIcons();
+                });
+            });
+        }
+
+        // --- AI VERIFICATION LOGIC ---
+        let isAiRunning = false;
+        function simulateAI() {
+            if(isAiRunning) return;
+            isAiRunning = true;
+
+            const btn = document.getElementById('btnRunAi');
+            const line = document.getElementById('aiScannerLine');
+            const standby = document.getElementById('aiStandby');
+            const ui = document.getElementById('aiProcessUi');
+            const finalRes = document.getElementById('aiFinal');
+            
+            // Reset
+            btn.innerHTML = `<i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i> Memproses...`;
+            btn.classList.replace('bg-rose-600', 'bg-slate-600');
+            line.classList.remove('hidden');
+            line.style.animation = 'scan 2s linear infinite';
+            
+            standby.classList.add('hidden');
+            ui.classList.remove('hidden');
+            ui.classList.add('flex');
+            finalRes.classList.add('hidden');
+            
+            for(let i=1; i<=4; i++) {
+                document.getElementById(`p${i}`).classList.remove('opacity-100');
+                document.getElementById(`p${i}`).classList.add('opacity-30');
+            }
+
+            // Sequence
+            setTimeout(() => document.getElementById('p1').classList.replace('opacity-30','opacity-100'), 500);
+            setTimeout(() => document.getElementById('p2').classList.replace('opacity-30','opacity-100'), 2000);
+            setTimeout(() => document.getElementById('p3').classList.replace('opacity-30','opacity-100'), 3500);
+            setTimeout(() => document.getElementById('p4').classList.replace('opacity-30','opacity-100'), 5000);
+            
+            setTimeout(() => {
+                line.classList.add('hidden');
+                line.style.animation = 'none';
+                finalRes.classList.remove('hidden');
+                
+                btn.innerHTML = `<i data-lucide="check-circle" class="w-5 h-5"></i> Analisis Selesai`;
+                btn.classList.replace('bg-slate-600', 'bg-emerald-600');
+                lucide.createIcons();
+
+                setTimeout(() => {
+                    isAiRunning = false;
+                    btn.classList.replace('bg-emerald-600', 'bg-rose-600');
+                    btn.innerHTML = `<i data-lucide="scan-line" class="w-5 h-5"></i> Mulai Analisis AI Baru`;
+                    lucide.createIcons();
+                }, 3000);
+            }, 6500);
+        }
+
+        // --- SECURITY / TERMINAL LOGIC ---
+        let logInterval = null;
+        function startSecurityLogs() {
+            if(logInterval) return; // already running
+            const logStream = document.getElementById('logStream');
+            const term = document.getElementById('terminalBody');
+            
+            const events = [
+                () => `[${new Date().toLocaleTimeString()}] <span class="text-blue-400">INFO</span> User INV-8829 requested dashboard access.`,
+                () => `[${new Date().toLocaleTimeString()}] <span class="text-emerald-400">SUCCESS</span> Token verified. Auth OK.`,
+                () => `[${new Date().toLocaleTimeString()}] <span class="text-amber-400">ENCRYPT</span> Wrapping payload [Tx_ID: 9912] with AES-256...`,
+                () => `[${new Date().toLocaleTimeString()}] <span class="text-emerald-400">SUCCESS</span> Ciphertext generated: 0x${Math.random().toString(16).substr(2, 8)}...`,
+                () => `[${new Date().toLocaleTimeString()}] <span class="text-blue-400">SYNC</span> Pushing hash to Cloud Node SG-1...`,
+                () => `[${new Date().toLocaleTimeString()}] <span class="text-slate-400">GEO_POLL</span> Checking location anomalies for active projects... Clear.`,
+                () => `[${new Date().toLocaleTimeString()}] <span class="text-slate-400">HEARTBEAT</span> System stable. No intrusion detected.`
+            ];
+
+            logInterval = setInterval(() => {
+                const eventFn = events[Math.floor(Math.random() * events.length)];
+                const logEl = document.createElement('div');
+                logEl.innerHTML = eventFn();
+                logStream.appendChild(logEl);
+                
+                // Keep only last 20 logs to prevent memory issue in UI
+                if(logStream.children.length > 20) {
+                    logStream.removeChild(logStream.firstChild);
+                }
+                
+                // Auto scroll
+                term.scrollTop = term.scrollHeight;
+            }, 2500);
+        }
+
+    </script>
+</body>
+</html>
