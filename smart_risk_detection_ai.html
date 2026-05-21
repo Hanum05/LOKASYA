@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="id" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Risk Detection (AI) - LOKASYA</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind Config -->
+    <script>
+        tailwind.config = {
+            darkMode: 'media',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    animation: {
+                        'scan-line': 'scan 2.5s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'pulse-glow': 'pulseGlow 2s ease-in-out infinite',
+                        'spin-slow': 'spin 4s linear infinite',
+                    },
+                    keyframes: {
+                        scan: {
+                            '0%': { transform: 'translateY(-10px)', opacity: '0' },
+                            '10%': { opacity: '1' },
+                            '90%': { opacity: '1' },
+                            '100%': { transform: 'translateY(120px)', opacity: '0' },
+                        },
+                        pulseGlow: {
+                            '0%, 100%': { opacity: '1', transform: 'scale(1)' },
+                            '50%': { opacity: '0.7', transform: 'scale(1.05)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <style>
+        @keyframes fade-in {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-in {
+            animation: fade-in 0.6s ease-out forwards;
+        }
+        
+        /* Custom Scrollbar */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: rgba(0,0,0,0.05);
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background-color: #cbd5e1;
+            border-radius: 10px;
+        }
+        .dark .custom-scrollbar::-webkit-scrollbar-thumb {
+            background-color: #475569;
+        }
+
+        /* Circular Progress styling */
+        .circular-chart {
+            display: block;
+            margin: 0 auto;
+            max-width: 80%;
+            max-height: 250px;
+        }
+        .circle-bg {
+            fill: none;
+            stroke: #e2e8f0;
+            stroke-width: 3.8;
+        }
+        .dark .circle-bg {
+            stroke: #334155;
+        }
+        .circle {
+            fill: none;
+            stroke-width: 3.8;
+            stroke-linecap: round;
+            transition: stroke-dasharray 1.5s ease-out;
+        }
+        .percentage {
+            fill: #0f172a;
+            font-family: 'Inter', sans-serif;
+            font-weight: bold;
+            font-size: 0.5em;
+            text-anchor: middle;
+        }
+        .dark .percentage {
+            fill: #f8fafc;
+        }
+        .percentage-label {
+            fill: #64748b;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.15em;
+            text-anchor: middle;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 dark:bg-slate-950 font-sans text-slate-800 dark:text-slate-200 flex flex-col min-h-screen transition-colors duration-300">
+
+    <!-- Navigation (Simplified for sub-pages) -->
+    <nav class="fixed w-full z-50 bg-white/90 dark:bg-slate-950/90 border-b border-slate-200 dark:border-slate-800 backdrop-blur-md shadow-sm transition-all duration-300">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <!-- Back to Home -->
+                <a href="index.html" class="flex items-center gap-2 text-slate-600 dark:text-slate-300 hover:text-rose-600 dark:hover:text-rose-400 transition-colors group">
+                    <i data-lucide="arrow-left" class="w-5 h-5 group-hover:-translate-x-1 transition-transform"></i>
+                    <span class="font-medium">Kembali ke Beranda</span>
+                </a>
+                
+                <!-- Logo -->
+                <div class="flex items-center gap-2">
+                    <div class="w-8 h-8 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-lg flex items-center justify-center text-white shadow-md">
+                        <i data-lucide="map-pin" class="w-4 h-4"></i>
+                    </div>
+                    <span class="font-bold text-xl tracking-tight text-teal-900 dark:text-teal-400 hidden sm:block">LOKASYA</span>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="flex-grow pt-24 pb-20">
+        
+        <!-- Hero Detail Section -->
+        <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 animate-in">
+            <nav class="flex text-sm text-slate-500 dark:text-slate-400 mb-8" aria-label="Breadcrumb">
+                <ol class="inline-flex items-center space-x-1 md:space-x-3">
+                    <li class="inline-flex items-center">
+                        <a href="index.html" class="hover:text-rose-600 dark:hover:text-rose-400 transition-colors">Teknologi Inti</a>
+                    </li>
+                    <li>
+                        <div class="flex items-center">
+                            <i data-lucide="chevron-right" class="w-4 h-4 mx-1"></i>
+                            <span class="text-slate-800 dark:text-slate-200 font-medium">Smart Risk Detection (AI)</span>
+                        </div>
+                    </li>
+                </ol>
+            </nav>
+
+            <div class="bg-white dark:bg-slate-900 rounded-3xl shadow-lg border border-slate-100 dark:border-slate-800 overflow-hidden transition-colors mb-12">
+                <div class="grid lg:grid-cols-2">
+                    
+                    <!-- Text Content -->
+                    <div class="p-8 md:p-12 lg:p-16 flex flex-col justify-center">
+                        <div class="w-16 h-16 rounded-2xl flex items-center justify-center mb-6 bg-rose-100 dark:bg-rose-900/40 text-rose-600 dark:text-rose-400">
+                            <i data-lucide="brain-circuit" class="w-8 h-8"></i>
+                        </div>
+                        <h1 class="text-3xl md:text-4xl font-bold text-slate-900 dark:text-white mb-4 leading-tight">
+                            Kecerdasan Buatan Pendeteksi Risiko
+                        </h1>
+                        <p class="text-lg text-slate-600 dark:text-slate-300 mb-8 leading-relaxed">
+                            LOKASYA dilengkapi dengan AI cerdas yang bertugas menganalisis setiap proyek investasi. Sistem secara otomatis memverifikasi silang dokumen legalitas dengan data geospasial untuk mendeteksi anomali atau indikasi *fraud* (penipuan) sebelum merugikan investor.
+                        </p>
+                        
+                        <div class="space-y-4">
+                            <div class="flex items-start gap-4">
+                                <div class="mt-1 bg-rose-100 dark:bg-rose-900/50 p-1.5 rounded-full text-rose-600 dark:text-rose-400 shrink-0">
+                                    <i data-lucide="file-search" class="w-4 h-4"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-bold text-slate-800 dark:text-slate-200">Optical Character Recognition (OCR)</h4>
+                                    <p class="text-sm text-slate-600 dark:text-slate-400">Membaca dan memvalidasi keaslian dokumen pendukung seperti NIB, KTP, dan sertifikat DSN-MUI secara instan.</p>
+                                </div>
+                            </div>
+                            <div class="flex items-start gap-4">
+                                <div class="mt-1 bg-rose-100 dark:bg-rose-900/50 p-1.5 rounded-full text-rose-600 dark:text-rose-400 shrink-0">
+                                    <i data-lucide="activity" class="w-4 h-4"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-bold text-slate-800 dark:text-slate-200">Algoritma Penilaian Risiko (Risk Scoring)</h4>
+                                    <p class="text-sm text-slate-600 dark:text-slate-400">Mengolah jutaan data transaksi historis untuk memberikan skor keamanan objektif untuk setiap perusahaan.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Visual Representation -->
+                    <div class="bg-slate-50 dark:bg-slate-800/50 p-8 flex items-center justify-center border-l border-slate-100 dark:border-slate-800 relative overflow-hidden transition-colors">
+                        <div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-5 dark:opacity-10"></div>
+                        <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-rose-400/20 rounded-full blur-3xl"></div>
+                        
+                        <!-- AI Network Illustration -->
+                        <div class="relative z-10 w-full max-w-sm flex flex-col items-center">
+                            <!-- Core Node -->
+                            <div class="w-32 h-32 relative flex justify-center items-center mb-8">
+                                <div class="absolute inset-0 border-4 border-rose-500/30 rounded-full animate-spin-slow"></div>
+                                <div class="absolute inset-2 border-4 border-dashed border-rose-400/50 rounded-full animate-spin-slow" style="animation-direction: reverse; animation-duration: 6s;"></div>
+                                <div class="w-20 h-20 bg-gradient-to-br from-rose-400 to-rose-600 rounded-full flex items-center justify-center shadow-lg shadow-rose-500/40 animate-pulse-glow z-10">
+                                    <i data-lucide="cpu" class="w-10 h-10 text-white"></i>
+                                </div>
+                                
+                                <!-- Connecting lines (CSS drawing) -->
+                                <div class="absolute top-full w-0.5 h-12 bg-gradient-to-b from-rose-400 to-transparent"></div>
+                                <div class="absolute right-full top-1/2 w-12 h-0.5 bg-gradient-to-l from-rose-400 to-transparent"></div>
+                                <div class="absolute left-full top-1/2 w-12 h-0.5 bg-gradient-to-r from-rose-400 to-transparent"></div>
+                            </div>
+                            
+                            <div class="bg-white dark:bg-slate-900 px-6 py-3 rounded-full shadow-md border border-slate-200 dark:border-slate-700 flex items-center gap-3">
+                                <div class="w-2 h-2 rounded-full bg-rose-500 animate-pulse"></div>
+                                <span class="font-mono text-sm text-slate-700 dark:text-slate-300">AI Engine: <span class="text-rose-600 dark:text-rose-400 font-bold">Active & Learning</span></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Interactive Demo Section -->
+            <div class="mb-16">
+                <div class="mb-6 flex items-center justify-between">
+                    <div>
+                        <h2 class="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                            <i data-lucide="play-circle" class="text-rose-500"></i>
+                            Demo Interaktif: Analisis Proyek Usaha
+                        </h2>
+                        <p class="text-slate-500 dark:text-slate-400 mt-1 text-sm">Simulasikan bagaimana AI LOKASYA mengevaluasi pendaftaran proyek baru (PT. Agro Syariah) dan mengeluarkan skor risikonya.</p>
+                    </div>
+                </div>
+
+                <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-md overflow-hidden grid lg:grid-cols-2 min-h-[450px]">
+                    
+                    <!-- Target Project Panel -->
+                    <div class="p-6 border-b lg:border-b-0 lg:border-r border-slate-200 dark:border-slate-800 flex flex-col">
+                        <h3 class="font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2 mb-4">
+                            <i data-lucide="folder-open" class="w-5 h-5 text-slate-400"></i>
+                            Data Pengajuan Proyek
+                        </h3>
+                        
+                        <div class="bg-slate-50 dark:bg-slate-800/50 rounded-xl p-4 border border-slate-200 dark:border-slate-700 flex-grow relative overflow-hidden group">
+                            
+                            <!-- Scanner Animation Overlay (Hidden initially) -->
+                            <div id="scanOverlay" class="absolute inset-0 bg-rose-500/5 z-10 hidden pointer-events-none">
+                                <div class="absolute top-0 left-0 right-0 h-1 bg-rose-500 shadow-[0_0_15px_rgba(244,63,94,0.8)] animate-scan-line"></div>
+                            </div>
+
+                            <div class="flex items-center gap-4 mb-6 border-b border-slate-200 dark:border-slate-700 pb-4">
+                                <div class="w-12 h-12 rounded-lg bg-emerald-100 dark:bg-emerald-900/50 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
+                                    <i data-lucide="building" class="w-6 h-6"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-bold text-slate-800 dark:text-white">PT. Agro Syariah Nusantara</h4>
+                                    <p class="text-xs text-slate-500 dark:text-slate-400">ID Proyek: ASN-2026-X9</p>
+                                </div>
+                            </div>
+                            
+                            <div class="space-y-4 text-sm">
+                                <div class="flex justify-between items-center bg-white dark:bg-slate-800 p-2.5 rounded-lg border border-slate-100 dark:border-slate-700">
+                                    <span class="text-slate-600 dark:text-slate-400 flex items-center gap-2"><i data-lucide="file-text" class="w-4 h-4"></i> Dok. Legalitas</span>
+                                    <span class="font-mono text-slate-800 dark:text-slate-200">NIB_Terlampir.pdf</span>
+                                </div>
+                                <div class="flex justify-between items-center bg-white dark:bg-slate-800 p-2.5 rounded-lg border border-slate-100 dark:border-slate-700">
+                                    <span class="text-slate-600 dark:text-slate-400 flex items-center gap-2"><i data-lucide="map-pin" class="w-4 h-4"></i> Data Geotagging</span>
+                                    <span class="font-mono text-slate-800 dark:text-slate-200">Lat: -7.25, Lng: 112.76</span>
+                                </div>
+                                <div class="flex justify-between items-center bg-white dark:bg-slate-800 p-2.5 rounded-lg border border-slate-100 dark:border-slate-700">
+                                    <span class="text-slate-600 dark:text-slate-400 flex items-center gap-2"><i data-lucide="badge-dollar-sign" class="w-4 h-4"></i> Pendanaan Aktif</span>
+                                    <span class="font-mono text-slate-800 dark:text-slate-200">Rp 500.000.000</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button id="startAiBtn" onclick="runAiAnalysis()" class="w-full mt-6 bg-rose-600 hover:bg-rose-700 text-white font-medium py-3 rounded-xl transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2">
+                            <i data-lucide="scan-line" class="w-5 h-5"></i>
+                            <span id="btnText">Jalankan Analisis AI</span>
+                        </button>
+                    </div>
+                    
+                    <!-- AI Processing Panel -->
+                    <div class="p-6 bg-slate-900 text-slate-300 flex flex-col relative overflow-hidden">
+                        
+                        <h3 class="font-bold text-white flex items-center gap-2 mb-6 relative z-10">
+                            <i data-lucide="cpu" class="w-5 h-5 text-rose-400"></i>
+                            AI Processing Dashboard
+                        </h3>
+                        
+                        <!-- Initial State -->
+                        <div id="aiWaiting" class="flex-1 flex flex-col items-center justify-center text-center text-slate-500">
+                            <i data-lucide="power" class="w-12 h-12 mb-3 opacity-50"></i>
+                            <p class="text-sm">Sistem standby. Menunggu perintah analisis...</p>
+                        </div>
+
+                        <!-- Processing State (Checklist) -->
+                        <div id="aiProcessing" class="hidden flex-1 flex-col space-y-4 z-10">
+                            
+                            <!-- Step 1 -->
+                            <div id="step1" class="flex items-start gap-3 opacity-30 transition-opacity duration-500">
+                                <div id="icon1" class="mt-0.5 w-5 h-5 rounded-full border-2 border-slate-600 flex items-center justify-center shrink-0 transition-colors"></div>
+                                <div>
+                                    <h4 class="font-bold text-sm text-slate-200">Verifikasi Dokumen OCR</h4>
+                                    <p id="desc1" class="text-xs text-slate-500">Menunggu antrean...</p>
+                                </div>
+                            </div>
+
+                            <!-- Step 2 -->
+                            <div id="step2" class="flex items-start gap-3 opacity-30 transition-opacity duration-500">
+                                <div id="icon2" class="mt-0.5 w-5 h-5 rounded-full border-2 border-slate-600 flex items-center justify-center shrink-0 transition-colors"></div>
+                                <div>
+                                    <h4 class="font-bold text-sm text-slate-200">Validasi Silang Geotagging</h4>
+                                    <p id="desc2" class="text-xs text-slate-500">Menunggu antrean...</p>
+                                </div>
+                            </div>
+
+                            <!-- Step 3 -->
+                            <div id="step3" class="flex items-start gap-3 opacity-30 transition-opacity duration-500">
+                                <div id="icon3" class="mt-0.5 w-5 h-5 rounded-full border-2 border-slate-600 flex items-center justify-center shrink-0 transition-colors"></div>
+                                <div>
+                                    <h4 class="font-bold text-sm text-slate-200">Analisis Historis Fraud</h4>
+                                    <p id="desc3" class="text-xs text-slate-500">Menunggu antrean...</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Final Result State (Score Gauge) -->
+                        <div id="aiResult" class="hidden flex-1 flex-col items-center justify-center z-10 animate-in">
+                            <svg viewBox="0 0 36 36" class="circular-chart">
+                                <path class="circle-bg"
+                                    d="M18 2.0845
+                                    a 15.9155 15.9155 0 0 1 0 31.831
+                                    a 15.9155 15.9155 0 0 1 0 -31.831"
+                                />
+                                <path id="scoreCircle" class="circle"
+                                    stroke="#10b981"
+                                    stroke-dasharray="0, 100"
+                                    d="M18 2.0845
+                                    a 15.9155 15.9155 0 0 1 0 31.831
+                                    a 15.9155 15.9155 0 0 1 0 -31.831"
+                                />
+                                <text x="18" y="19" class="percentage">96%</text>
+                                <text x="18" y="24" class="percentage-label">Skor Aman</text>
+                            </svg>
+                            <div class="mt-4 text-center">
+                                <div class="inline-block bg-emerald-900/50 text-emerald-400 font-bold px-4 py-1.5 rounded-full text-sm border border-emerald-800">
+                                    Status: LOW RISK
+                                </div>
+                                <p class="text-xs text-slate-400 mt-2">Tidak ditemukan indikasi investasi fiktif (Gharar).</p>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            <!-- Detail Section -->
+            <div class="mt-16 grid md:grid-cols-3 gap-8">
+                <div class="md:col-span-3 mb-4">
+                    <h2 class="text-2xl font-bold text-slate-900 dark:text-white border-b border-slate-200 dark:border-slate-800 pb-4 transition-colors">Kapabilitas Utama AI LOKASYA</h2>
+                </div>
+                
+                <div class="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 transition-colors">
+                    <div class="w-10 h-10 rounded-full bg-orange-100 dark:bg-orange-900/40 flex items-center justify-center text-orange-600 dark:text-orange-400 mb-4">
+                        <i data-lucide="layers" class="w-5 h-5"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-slate-800 dark:text-slate-100 mb-2">Verifikasi Silang Otomatis</h3>
+                    <p class="text-slate-600 dark:text-slate-400 text-sm leading-relaxed">
+                        Sistem tidak hanya mempercayai dokumen kertas. AI secara otomatis mencocokkan alamat di NIB dengan titik koordinat *Geotagging* aktual. Jika ada ketidakcocokan signifikan, skor risiko akan otomatis naik.
+                    </p>
+                </div>
+
+                <div class="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 transition-colors">
+                    <div class="w-10 h-10 rounded-full bg-rose-100 dark:bg-rose-900/40 flex items-center justify-center text-rose-600 dark:text-rose-400 mb-4">
+                        <i data-lucide="siren" class="w-5 h-5"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-slate-800 dark:text-slate-100 mb-2">Peringatan Dini (Early Warning)</h3>
+                    <p class="text-slate-600 dark:text-slate-400 text-sm leading-relaxed">
+                        Mampu mendeteksi pola yang mencurigakan (seperti perpindahan dana yang tidak wajar atau laporan pengaduan berantai) dan langsung memberikan notifikasi *alert* kepada investor terkait potensi gagal bayar.
+                    </p>
+                </div>
+
+                <div class="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 transition-colors">
+                    <div class="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900/40 flex items-center justify-center text-blue-600 dark:text-blue-400 mb-4">
+                        <i data-lucide="shield-check" class="w-5 h-5"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-slate-800 dark:text-slate-100 mb-2">Jaminan Syariah (Anti-Gharar)</h3>
+                    <p class="text-slate-600 dark:text-slate-400 text-sm leading-relaxed">
+                        Membantu dewan pengawas dalam menyeleksi proyek. Dengan deteksi AI, ketidakpastian (*Gharar*) atau manipulasi informasi fisik objek investasi dapat dihindari sepenuhnya.
+                    </p>
+                </div>
+            </div>
+            
+        </section>
+    </main>
+
+    <!-- Minimal Footer -->
+    <footer class="bg-slate-900 text-slate-400 py-8 border-t border-slate-800 mt-auto">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-sm">
+            <p>&copy; 2026 LOKASYA by Tim TriRen. Delegasi SHEIF KSEI FEB UNNES.</p>
+        </div>
+    </footer>
+
+    <!-- Script Utama Aplikasi -->
+    <script>
+        // Inisialisasi ikon Lucide
+        lucide.createIcons();
+
+        let isAnalyzing = false;
+
+        // Fungsi Simulasi Proses AI
+        function runAiAnalysis() {
+            if (isAnalyzing) return;
+            isAnalyzing = true;
+
+            const btn = document.getElementById('startAiBtn');
+            const btnText = document.getElementById('btnText');
+            const scanOverlay = document.getElementById('scanOverlay');
+            
+            const aiWaiting = document.getElementById('aiWaiting');
+            const aiProcessing = document.getElementById('aiProcessing');
+            const aiResult = document.getElementById('aiResult');
+            const scoreCircle = document.getElementById('scoreCircle');
+
+            // Reset UI State
+            btn.classList.replace('bg-rose-600', 'bg-slate-600');
+            btn.classList.add('cursor-not-allowed', 'opacity-80');
+            btnText.innerText = "Sistem AI sedang bekerja...";
+            scanOverlay.classList.remove('hidden');
+            
+            aiWaiting.classList.add('hidden');
+            aiResult.classList.add('hidden');
+            aiProcessing.classList.remove('hidden');
+            aiProcessing.classList.add('flex');
+            
+            scoreCircle.setAttribute('stroke-dasharray', '0, 100');
+
+            // Helper function for steps
+            function setStepStatus(stepNum, status, text, colorClass, iconHtml) {
+                const step = document.getElementById(`step${stepNum}`);
+                const icon = document.getElementById(`icon${stepNum}`);
+                const desc = document.getElementById(`desc${stepNum}`);
+                
+                if(status === 'active') {
+                    step.classList.remove('opacity-30');
+                    step.classList.add('opacity-100');
+                    icon.innerHTML = '<div class="w-2 h-2 bg-rose-500 rounded-full animate-pulse"></div>';
+                    icon.className = `mt-0.5 w-5 h-5 rounded-full border-2 border-rose-500 flex items-center justify-center shrink-0 transition-colors`;
+                    desc.innerText = text;
+                    desc.className = "text-xs text-rose-400 animate-pulse";
+                } else if (status === 'done') {
+                    icon.innerHTML = iconHtml;
+                    icon.className = `mt-0.5 w-5 h-5 rounded-full bg-${colorClass}-500/20 text-${colorClass}-500 border-2 border-${colorClass}-500 flex items-center justify-center shrink-0 transition-colors`;
+                    desc.innerText = text;
+                    desc.className = "text-xs text-slate-400";
+                    lucide.createIcons();
+                }
+            }
+
+            // --- SEQUENCE TIMEOUTS ---
+            
+            // Step 1: OCR
+            setTimeout(() => {
+                setStepStatus(1, 'active', 'Memindai teks dan stempel NIB...');
+            }, 500);
+
+            setTimeout(() => {
+                setStepStatus(1, 'done', 'NIB terverifikasi valid & terdaftar.', 'emerald', '<i data-lucide="check" class="w-3 h-3"></i>');
+                // Start Step 2
+                setStepStatus(2, 'active', 'Mencocokkan koordinat dengan database tata ruang...');
+            }, 2500);
+
+            // Step 2: Geotagging Cross-check
+            setTimeout(() => {
+                setStepStatus(2, 'done', 'Lokasi sesuai. Deviasi radius < 10 meter.', 'emerald', '<i data-lucide="check" class="w-3 h-3"></i>');
+                // Start Step 3
+                setStepStatus(3, 'active', 'Mencari rekam jejak pengurus perusahaan...');
+            }, 4500);
+
+            // Step 3: Fraud History
+            setTimeout(() => {
+                setStepStatus(3, 'done', 'Rekam jejak bersih. 0 kasus gagal bayar.', 'emerald', '<i data-lucide="check" class="w-3 h-3"></i>');
+            }, 6500);
+
+            // Final Result
+            setTimeout(() => {
+                scanOverlay.classList.add('hidden');
+                aiProcessing.classList.add('hidden');
+                aiProcessing.classList.remove('flex');
+                aiResult.classList.remove('hidden');
+                aiResult.classList.add('flex');
+
+                // Animate SVG Circle to 96%
+                setTimeout(() => {
+                    scoreCircle.setAttribute('stroke-dasharray', '96, 100');
+                }, 100);
+
+                // Reset Button
+                btn.classList.replace('bg-slate-600', 'bg-emerald-600');
+                btn.innerHTML = `<i data-lucide="shield-check" class="w-5 h-5"></i><span>Proyek Dinyatakan Aman</span>`;
+                lucide.createIcons();
+
+                // Soft reset to allow replay after long delay
+                setTimeout(() => {
+                    isAnalyzing = false;
+                    btn.classList.replace('bg-emerald-600', 'bg-rose-600');
+                    btn.classList.remove('cursor-not-allowed', 'opacity-80');
+                    btn.innerHTML = `<i data-lucide="scan-line" class="w-5 h-5"></i><span id="btnText">Jalankan Ulang Analisis AI</span>`;
+                    
+                    // Reset step styling back to default
+                    [1,2,3].forEach(i => {
+                        const step = document.getElementById(`step${i}`);
+                        const icon = document.getElementById(`icon${i}`);
+                        const desc = document.getElementById(`desc${i}`);
+                        
+                        step.className = "flex items-start gap-3 opacity-30 transition-opacity duration-500";
+                        icon.innerHTML = "";
+                        icon.className = "mt-0.5 w-5 h-5 rounded-full border-2 border-slate-600 flex items-center justify-center shrink-0 transition-colors";
+                        desc.className = "text-xs text-slate-500";
+                        desc.innerText = "Menunggu antrean...";
+                    });
+
+                    lucide.createIcons();
+                }, 8000);
+
+            }, 7500);
+        }
+    </script>
+</body>
+</html>
